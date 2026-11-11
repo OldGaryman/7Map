@@ -1,0 +1,98 @@
+<Window x:Class="MapEditor.PrefabWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ic="clr-namespace:MapEditor"
+        Title="Building" Width="380" Height="870" MinWidth="320" MinHeight="590"
+        WindowStyle="ToolWindow" ShowInTaskbar="False" ShowActivated="False"
+        FontFamily="Segoe UI" FontSize="13" Background="{DynamicResource WindowBrush}" Foreground="{DynamicResource TextBrush}">
+    <Window.Resources>
+        <Style x:Key="Value" TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+            <Setter Property="Width" Value="72"/>
+            <Setter Property="Padding" Value="3,1"/>
+            <Setter Property="HorizontalContentAlignment" Value="Right"/>
+            <Setter Property="Margin" Value="0,2"/>
+        </Style>
+        <Style x:Key="RotButton" TargetType="ToggleButton" BasedOn="{StaticResource {x:Type ToggleButton}}">
+            <Setter Property="Padding" Value="0,3"/>
+            <Setter Property="Margin" Value="0,0,4,0"/>
+        </Style>
+    </Window.Resources>
+    <DockPanel Margin="10">
+        <!-- Vorschaubild immer in Originalgröße (100 %, Wunsch des Nutzers 31.10.2026; Bilder des Spiels 280 × 210), siehe ShowBuildingWindow -->
+        <Border DockPanel.Dock="Top" Height="210" Background="{DynamicResource SoftLineBrush}" CornerRadius="6">
+            <Grid>
+                <TextBlock x:Name="NoImageText" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource SubtleTextBrush}" Text="No preview image available."/>
+                <Image x:Name="PreviewImage" Stretch="Uniform"/>
+            </Grid>
+        </Border>
+        <TextBlock x:Name="TitleText" DockPanel.Dock="Top" FontWeight="SemiBold" FontSize="14" TextWrapping="Wrap" Margin="0,8,0,2" Text=""/>
+        <TextBlock x:Name="InfoText" DockPanel.Dock="Top" FontSize="12" Foreground="{DynamicResource SubtleTextBrush}" TextWrapping="Wrap" Text=""/>
+
+        <!-- Kopien dieses Gebäudes auf der Karte (Wunsch des Nutzers): Klick = markieren und unten bearbeiten, Papierkorb = löschen -->
+        <DockPanel DockPanel.Dock="Top" Margin="0,10,0,4">
+            <Button x:Name="PlaceCopyButton" DockPanel.Dock="Right" Content="+ Place" Padding="8,1"
+                    ToolTip="Place a new copy of this building (R = rotate, right-drag = move the map, Esc = cancel)"/>
+            <TextBlock x:Name="InstanceText" VerticalAlignment="Center" FontWeight="SemiBold" Text=""/>
+        </DockPanel>
+        <CheckBox x:Name="TileGridCheck" DockPanel.Dock="Top" Content="Snap to neighboring tiles and the 150 m grid" Margin="0,0,0,4" Visibility="Collapsed"
+                  ToolTip="City tiles snap to the edges of neighboring tiles (and to the 150 m grid) so that their roads meet. Hold Alt while placing or moving to switch it the other way for one move."/>
+        <ListBox x:Name="CopyList" DockPanel.Dock="Top" MaxHeight="150" BorderBrush="{DynamicResource SoftLineBrush}" HorizontalContentAlignment="Stretch"
+                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"/>
+        <Border DockPanel.Dock="Top" Height="1" Background="{DynamicResource SoftLineBrush}" Margin="0,10,0,0"/>
+        <TextBlock x:Name="SelectHint" DockPanel.Dock="Top" FontSize="12" Foreground="{DynamicResource SubtleTextBrush}" TextWrapping="Wrap" Margin="0,8,0,0"
+                   Text="Choose a copy in the list (or click it on the map) to change it."/>
+
+
+        <TextBlock x:Name="WarnText" DockPanel.Dock="Bottom" FontSize="12" Foreground="{DynamicResource ErrorBrush}" TextWrapping="Wrap" Margin="0,6,0,0" Visibility="Collapsed"/>
+        <TextBlock DockPanel.Dock="Bottom" FontSize="12" Foreground="{DynamicResource SubtleTextBrush}" TextWrapping="Wrap" Margin="0,6,0,0"
+                   Text="Enter applies a value. Changes are edit steps (Undo with Ctrl+Z) and are written with &quot;Save to project folder&quot;."/>
+
+        <!-- auf der Karte gezogen, aber noch nicht übernommen (Wunsch des Nutzers: Verschieben hier bestätigen) -->
+        <Border x:Name="MovePanel" DockPanel.Dock="Bottom" Background="{DynamicResource NoteBrush}" BorderBrush="{DynamicResource NoteBorderBrush}" BorderThickness="1" CornerRadius="6"
+                Padding="8" Margin="0,10,0,0" Visibility="Collapsed">
+            <StackPanel>
+                <TextBlock x:Name="MoveText" TextWrapping="Wrap" Text=""/>
+                <UniformGrid Columns="2" Margin="0,8,0,0">
+                    <Button x:Name="ConfirmMoveButton" Content="Apply move" Padding="0,3" Margin="0,0,4,0" FontWeight="SemiBold"/>
+                    <Button x:Name="CancelMoveButton" Content="Cancel" Padding="0,3" Margin="4,0,0,0"/>
+                </UniformGrid>
+            </StackPanel>
+        </Border>
+
+        <Grid Margin="0,10,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <TextBlock VerticalAlignment="Center" Text="Position x (west edge)"/>
+            <TextBox Grid.Column="1" x:Name="XBox" Style="{StaticResource Value}"/>
+            <TextBlock Grid.Row="1" VerticalAlignment="Center" Text="Position z (south edge)"/>
+            <TextBox Grid.Row="1" Grid.Column="1" x:Name="ZBox" Style="{StaticResource Value}"/>
+            <TextBlock Grid.Row="2" VerticalAlignment="Center" Text="Building height (ground, m)"
+                       ToolTip="Height of the ground the building stands on. y in prefabs.xml = ground + YOffset (whole meters)."/>
+            <TextBox Grid.Row="2" Grid.Column="1" x:Name="GroundBox" Style="{StaticResource Value}"/>
+            <Button Grid.Row="2" Grid.Column="2" x:Name="FromTerrainButton" Content="From terrain" Padding="6,1" Margin="6,2,0,2"
+                    ToolTip="Average terrain height under the building (as when placing)"/>
+            <TextBlock Grid.Row="3" Grid.ColumnSpan="3" x:Name="YText" FontSize="12" Foreground="{DynamicResource SubtleTextBrush}" Margin="0,2,0,0" Text=""/>
+            <TextBlock Grid.Row="4" Grid.ColumnSpan="3" x:Name="TerrainText" FontSize="12" Foreground="{DynamicResource SubtleTextBrush}" Margin="0,2,0,6" TextWrapping="Wrap" Text=""/>
+            <TextBlock Grid.Row="5" VerticalAlignment="Center" Text="Rotation"/>
+            <UniformGrid Grid.Row="6" Grid.ColumnSpan="3" Columns="4" Margin="0,4,0,0">
+                <ToggleButton x:Name="Rot0" Style="{StaticResource RotButton}" Content="0°" Tag="0"/>
+                <ToggleButton x:Name="Rot1" Style="{StaticResource RotButton}" Content="90°" Tag="1"/>
+                <ToggleButton x:Name="Rot2" Style="{StaticResource RotButton}" Content="180°" Tag="2"/>
+                <ToggleButton x:Name="Rot3" Style="{StaticResource RotButton}" Content="270°" Tag="3" Margin="0"/>
+            </UniformGrid>
+            <!-- Gebäude auf einem Bauplatz einer Stadt-Kachel: gegen ein passendes austauschen (Wunsch des Nutzers) -->
+            <StackPanel Grid.Row="7" Grid.ColumnSpan="3" x:Name="LotPanel" Margin="0,14,0,0" VerticalAlignment="Top" Visibility="Collapsed">
+                <TextBlock x:Name="LotText" FontSize="12" Foreground="{DynamicResource SubtleTextBrush}" TextWrapping="Wrap" Text=""/>
+                <Button x:Name="SwapButton" Padding="8,3" Margin="0,6,0,0" HorizontalAlignment="Left"
+                        ToolTip="Replace this building with another one that fits exactly on this lot of the city tile"><StackPanel Orientation="Horizontal"><TextBlock Style="{StaticResource IconText}" Text="{x:Static ic:Icons.ArrowLeftRight}"/><TextBlock Text="Swap …" Margin="6,0,0,0"/></StackPanel></Button>
+            </StackPanel>
+        </Grid>
+    </DockPanel>
+</Window>

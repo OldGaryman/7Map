@@ -1,0 +1,96 @@
+<Window x:Class="MapEditor.CityWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ic="clr-namespace:MapEditor"
+        Title="Generate towns" Width="640" SizeToContent="Height" ResizeMode="NoResize" WindowStartupLocation="CenterOwner"
+        FontFamily="Segoe UI" FontSize="13" Background="{DynamicResource WindowBrush}" Foreground="{DynamicResource TextBrush}" ShowInTaskbar="False">
+    <!-- Städte erzeugen (Wunsch des Nutzers 7.11.2026): Stadtarten wie im Spiel (rwgmixer.xml), Höhenstufen mit Rampen.
+         Formular-Layout aus Theme.xaml. Die Zeilen der Stadtarten legt der Code an (aus den Regeln des Spiels). -->
+    <DockPanel Margin="20,18,20,16">
+        <DockPanel DockPanel.Dock="Bottom" Margin="0,12,0,0">
+            <TextBlock x:Name="ErrorText" Foreground="{DynamicResource ErrorBrush}" TextWrapping="Wrap" VerticalAlignment="Center" MaxWidth="330"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Style="{StaticResource DialogButton}" Content="Cancel" IsCancel="True"/>
+                <Button x:Name="CreateButton" Style="{StaticResource DialogButton}" FontWeight="SemiBold" IsDefault="True" Click="Create_Click">
+                    <StackPanel Orientation="Horizontal"><TextBlock Style="{StaticResource IconText}" Text="{x:Static ic:Icons.Buildings}"/><TextBlock Text="Generate towns" Margin="6,0,0,0"/></StackPanel>
+                </Button>
+            </StackPanel>
+        </DockPanel>
+
+        <StackPanel>
+            <TextBlock Style="{StaticResource FormTitle}" Text="Towns (like the game for this map size)"/>
+            <Border Style="{StaticResource FormBox}" Margin="0">
+                <StackPanel>
+                    <DockPanel Style="{StaticResource FormRow}">
+                        <TextBlock Style="{StaticResource FormLabelWide}" Text="Kind of town"/>
+                        <TextBlock Style="{StaticResource FormHeader}" Width="{StaticResource FormFieldWidth}" Text="Number"/>
+                        <TextBlock Style="{StaticResource FormHeader}" Margin="12,0,0,0" Width="200" TextAlignment="Left" Text="Tiles from – to"/>
+                    </DockPanel>
+                    <StackPanel x:Name="TypeRows"/>
+                </StackPanel>
+            </Border>
+
+            <TextBlock Style="{StaticResource FormTitle}" Margin="0,16,0,6" Text="Districts and roads"/>
+            <Border Style="{StaticResource FormBox}" Margin="0">
+                <StackPanel>
+                    <DockPanel Style="{StaticResource FormRow}">
+                        <TextBlock Style="{StaticResource FormLabelWide}" Text="Location of towns"/>
+                        <ComboBox x:Name="ElevationBox" Style="{StaticResource FormCombo}" Width="230" SelectionChanged="Selection_Changed"
+                                  ToolTip="Hilltops: towns prefer hills, plateaus and ridges; the main part is levelled there (the top is cut off). If no hill fits, the town takes a flat place as usual">
+                            <ComboBoxItem Content="Plains and valleys"/>
+                            <ComboBoxItem Content="Mixed"/>
+                            <ComboBoxItem Content="Prefer hilltops"/>
+                        </ComboBox>
+                    </DockPanel>
+                    <DockPanel Style="{StaticResource FormRow}">
+                        <TextBlock Style="{StaticResource FormLabelWide}" Text="Districts per town, at most"/>
+                        <ComboBox x:Name="PartsBox" Style="{StaticResource FormCombo}" SelectionChanged="Selection_Changed"
+                                  ToolTip="Besides the flat main part a town gets up to this many districts with 1–3 tiles each, on a hilltop or in a valley. Small towns get fewer. 0 = only the main part">
+                            <ComboBoxItem Content="0"/>
+                            <ComboBoxItem Content="1"/>
+                            <ComboBoxItem Content="2"/>
+                            <ComboBoxItem Content="3"/>
+                        </ComboBox>
+                    </DockPanel>
+                    <DockPanel Style="{StaticResource FormRow}">
+                        <TextBlock Style="{StaticResource FormLabelWide}" Text="Height difference to the main part"/>
+                        <TextBox x:Name="DeltaMinBox" Style="{StaticResource FormField}" TextChanged="Text_Changed"/>
+                        <TextBlock Style="{StaticResource FormUnit}" Text="–"/>
+                        <TextBox x:Name="DeltaMaxBox" Style="{StaticResource FormFieldNext}" TextChanged="Text_Changed"/>
+                        <TextBlock Style="{StaticResource FormUnit}" Text="m"/>
+                    </DockPanel>
+                    <DockPanel Style="{StaticResource FormRow}">
+                        <TextBlock Style="{StaticResource FormLabelWide}" Text="Road gradient, at most"/>
+                        <TextBox x:Name="GradeBox" Style="{StaticResource FormField}" TextChanged="Text_Changed"/>
+                        <TextBlock Style="{StaticResource FormUnit}" Text="%"/>
+                    </DockPanel>
+                </StackPanel>
+            </Border>
+            <TextBlock Style="{StaticResource FormNote}" Text="The main part is flat. Districts lie at their natural height above or below it; a winding road that follows the ground connects them (and the gateway at the town entrance)."/>
+
+            <TextBlock Style="{StaticResource FormTitle}" Margin="0,16,0,6" Text="More"/>
+            <Border Style="{StaticResource FormBox}" Margin="0">
+                <StackPanel>
+                    <DockPanel Style="{StaticResource FormRow}">
+                        <TextBlock Style="{StaticResource FormLabelWide}" Text="Building lots"/>
+                        <CheckBox x:Name="FillBox" Style="{StaticResource FormCheck}" Content="Fill with fitting buildings (random)"/>
+                    </DockPanel>
+                    <DockPanel Style="{StaticResource FormRow}">
+                        <TextBlock Style="{StaticResource FormLabelWide}" Text="Traders per biome"/>
+                        <TextBox x:Name="TradersBox" Style="{StaticResource FormField}" TextChanged="Text_Changed"
+                                 ToolTip="Rekt in the pine forest, Jen in the burnt forest, Bob in the desert, Hugh in the snow, Joel in the wasteland – on the gateway of the largest towns of the biome"/>
+                        <TextBlock x:Name="TradersText" Style="{StaticResource FormInfo}"/>
+                    </DockPanel>
+                    <DockPanel Style="{StaticResource FormRow}">
+                        <TextBlock Style="{StaticResource FormLabelWide}" Text="Seed"/>
+                        <TextBox x:Name="SeedBox" Width="150" Height="{StaticResource FormControlHeight}" VerticalContentAlignment="Center" Padding="3,0" DockPanel.Dock="Left" TextChanged="Text_Changed"/>
+                        <Button Style="{StaticResource FormButton}" Click="RandomSeed_Click" ToolTip="New random seed – same seed on the same map = same towns">
+                            <StackPanel Orientation="Horizontal"><TextBlock Style="{StaticResource IconText}" Text="{x:Static ic:Icons.Dice5}"/><TextBlock Text="Random" Margin="6,0,0,0"/></StackPanel>
+                        </Button>
+                    </DockPanel>
+                </StackPanel>
+            </Border>
+            <TextBlock Style="{StaticResource FormNote}" Text="Towns are placed on fitting, not too steep ground away from water, spawn points and existing buildings. Roads between towns follow later. Undo with Ctrl+Z."/>
+        </StackPanel>
+    </DockPanel>
+</Window>

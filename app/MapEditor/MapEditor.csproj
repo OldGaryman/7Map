@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>MapEditor</RootNamespace>
+    <AssemblyName>YAMEE</AssemblyName>
+    <Product>YAMEE – Yet Another Map Editor Extra</Product>
+    <!-- Symbol der exe (Taskleiste, Titelleiste, Startmenü); erzeugt aus yamee_icon.svg mit tools\render_logo.ps1 -->
+    <ApplicationIcon>Assets\yamee.ico</ApplicationIcon>
+    <Version>1.0.2</Version>
+  </PropertyGroup>
+
+  <!-- Entwicklungsstand: eigene Einstellungen unter %APPDATA%\YAMEE-Dev; publish.bat baut mit YameeEdition=Release ohne DEV -->
+  <PropertyGroup Condition="'$(YameeEdition)' != 'Release'">
+    <DefineConstants>$(DefineConstants);DEV</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- WPF lässt System.IO bei den automatischen usings weg (Namenskonflikt mit Path aus WPF) -->
+    <Using Include="System.IO" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Sprachdateien neben YAMEE.exe (Languages\German.ini …) -->
+    <None Include="Languages\*.ini" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Logo und Symbol, eingebaut in die exe -->
+    <Resource Include="Assets\yamee_logo.png" />
+    <Resource Include="Assets\yamee.ico" />
+    <!-- Symbolschrift Bootstrap Icons (MIT, Lizenz daneben); Zeichen als Icon.* in Icons.cs, erzeugt mit tools\make_icon_names.ps1 -->
+    <Resource Include="Assets\bootstrap-icons.ttf" />
+  </ItemGroup>
+
+  <ItemGroup>
+  </ItemGroup>
+
+</Project>

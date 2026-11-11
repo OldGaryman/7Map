@@ -1,0 +1,35 @@
+<Window x:Class="MapEditor.SaveWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Copy map changes into a save" Width="560" SizeToContent="Height" ResizeMode="NoResize"
+        WindowStartupLocation="Manual" ShowInTaskbar="False"
+        FontFamily="Segoe UI" FontSize="13" Background="{DynamicResource WindowBrush}" Foreground="{DynamicResource TextBrush}">
+    <!-- Kartenänderungen in einen bestehenden Spielstand übernehmen (Wunsch des Nutzers 30.10.2026): erst Vorschau, dann übernehmen -->
+    <StackPanel Margin="16">
+        <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource SubtleTextBrush}" Margin="0,0,0,10"
+                   Text="Areas you have already visited are stored in the save and never rebuilt from the map. YAMEE resets the stored areas in which the map has changed and copies the map into the game, so the game rebuilds them from the new map."/>
+
+        <TextBlock FontWeight="SemiBold" Text="Save game"/>
+        <ComboBox x:Name="SaveBox" Margin="0,4,0,0"/>
+        <TextBlock x:Name="NoSaveText" Margin="0,4,0,0" FontSize="12" Foreground="{DynamicResource ErrorBrush}" TextWrapping="Wrap" Visibility="Collapsed"
+                   Text="No save for this world was found. Start a game on this world first."/>
+
+        <TextBlock FontWeight="SemiBold" Margin="0,12,0,0" Text="Compare with"/>
+        <TextBlock x:Name="ReferenceText" Margin="0,4,0,0" FontSize="12" TextWrapping="Wrap" Text=""/>
+
+        <Button x:Name="PreviewButton" Content="Calculate preview" Padding="10,3" Margin="0,12,0,0" HorizontalAlignment="Left"/>
+        <Border x:Name="ResultBox" Margin="0,10,0,0" Padding="10,8" Background="{DynamicResource PanelBrush}" CornerRadius="6" Visibility="Collapsed">
+            <StackPanel>
+                <TextBlock x:Name="ResultText" TextWrapping="Wrap" Text=""/>
+                <TextBlock x:Name="WarnText" Margin="0,8,0,0" FontSize="12" Foreground="{DynamicResource ErrorBrush}" TextWrapping="Wrap"
+                           Text="In the areas marked red on the map, everything built or changed in the game is lost (the save is backed up completely first)."/>
+            </StackPanel>
+        </Border>
+        <TextBlock x:Name="StatusText" Margin="0,8,0,0" FontSize="12" Foreground="{DynamicResource SubtleTextBrush}" TextWrapping="Wrap" Text=""/>
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,14,0,0">
+            <Button x:Name="ApplyButton" Content="Copy into save" Padding="12,4" FontWeight="SemiBold" IsEnabled="False" Margin="0,0,8,0"/>
+            <Button Content="Close" Padding="12,4" IsCancel="True"/>
+        </StackPanel>
+    </StackPanel>
+</Window>

@@ -1,0 +1,39 @@
+<Window x:Class="MapEditor.WelcomeWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Welcome to YAMEE" Width="640" SizeToContent="Height" ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False"
+        FontFamily="Segoe UI" FontSize="13" Background="{DynamicResource WindowBrush}" Foreground="{DynamicResource TextBrush}">
+    <!-- erster Start auf einem PC (Wunsch des Nutzers 30.10.2026): zeigt, was gefunden wurde; „Passt so“ genügt meist -->
+    <StackPanel Margin="18">
+        <TextBlock FontSize="16" FontWeight="SemiBold" Text="Welcome to YAMEE"/>
+        <TextBlock Margin="0,6,0,14" TextWrapping="Wrap" Foreground="{DynamicResource SubtleTextBrush}"
+                   Text="YAMEE has looked for 7 Days to Die and its worlds. Please check the folders and click &quot;Looks good&quot;. Everything can be changed later in the settings."/>
+
+        <TextBlock FontWeight="SemiBold" Text="7 Days to Die (game folder)"/>
+        <DockPanel Margin="0,4,0,0">
+            <Button x:Name="GameBrowse" DockPanel.Dock="Right" Content="Browse …" Padding="8,2" Margin="6,0,0,0"/>
+            <TextBox x:Name="GameBox" Padding="4,2"/>
+        </DockPanel>
+        <TextBlock x:Name="GameInfo" Margin="0,4,0,12" FontSize="12" TextWrapping="Wrap" Foreground="{DynamicResource SubtleTextBrush}" Text=""/>
+
+        <TextBlock FontWeight="SemiBold" Text="Worlds of the game (GeneratedWorlds)"/>
+        <TextBlock x:Name="WorldsInfo" Margin="0,4,0,12" FontSize="12" TextWrapping="Wrap" Foreground="{DynamicResource SubtleTextBrush}" Text=""/>
+
+        <TextBlock FontWeight="SemiBold" Text="Project folder (your working copies of the worlds)"/>
+        <DockPanel Margin="0,4,0,0">
+            <Button x:Name="ProjectBrowse" DockPanel.Dock="Right" Content="Browse …" Padding="8,2" Margin="6,0,0,0"/>
+            <TextBox x:Name="ProjectBox" Padding="4,2"/>
+        </DockPanel>
+        <TextBlock Margin="0,4,0,12" FontSize="12" TextWrapping="Wrap" Foreground="{DynamicResource SubtleTextBrush}"
+                   Text="YAMEE never changes a world in the game directly: it works on a copy here and writes it back with &quot;Copy to 7 Days to Die&quot;."/>
+
+        <TextBlock FontWeight="SemiBold" Text="Language"/>
+        <ComboBox x:Name="LanguageBox" Width="180" HorizontalAlignment="Left" Margin="0,4,0,0"/>
+
+        <TextBlock x:Name="ErrorText" Margin="0,12,0,0" Foreground="{DynamicResource ErrorBrush}" TextWrapping="Wrap" Visibility="Collapsed"/>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
+            <Button x:Name="OkButton" Content="Looks good" Padding="16,4" FontWeight="SemiBold" IsDefault="True"/>
+        </StackPanel>
+    </StackPanel>
+</Window>

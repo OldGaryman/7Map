@@ -1,0 +1,1295 @@
+﻿<Window x:Class="MapEditor.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:c="clr-namespace:MapEditor.Controls"
+        xmlns:ic="clr-namespace:MapEditor"
+        Title="YAMEE" Width="1280" Height="860" WindowState="Maximized"
+        FontFamily="Segoe UI" FontSize="13" Background="{DynamicResource WindowBrush}" Foreground="{DynamicResource TextBrush}" KeyDown="Window_KeyDown" Closing="Window_Closing" Closed="Window_Closed">
+    <Window.Resources>
+        <Style x:Key="SectionTitle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="{DynamicResource SubtleTextBrush}"/>
+            <Setter Property="Margin" Value="0,0,0,8"/>
+        </Style>
+        <Style x:Key="Card" TargetType="Border">
+            <Setter Property="Background" Value="{DynamicResource CardBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SoftLineBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="12"/>
+            <Setter Property="Margin" Value="0,0,0,10"/>
+        </Style>
+        <Style x:Key="ToolBox" TargetType="Border">
+            <Setter Property="Background" Value="{DynamicResource ToolBoxBrush}"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="8"/>
+            <Setter Property="Margin" Value="0,0,0,8"/>
+        </Style>
+        <Style x:Key="ToolButton" TargetType="ToggleButton" BasedOn="{StaticResource {x:Type ToggleButton}}">
+            <Setter Property="Padding" Value="10,5"/>
+            <Setter Property="Margin" Value="0,0,0,6"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+        </Style>
+        <Style x:Key="WideButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="Padding" Value="10,5"/>
+            <Setter Property="Margin" Value="0,0,0,6"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+        </Style>
+        <Style x:Key="CategoryButton" TargetType="ToggleButton" BasedOn="{StaticResource {x:Type ToggleButton}}">
+            <!-- Größer und ohne Innenabstand, damit das Symbol genau in der Mitte sitzt und nicht abgeschnitten wird -->
+            <Setter Property="Width" Value="40"/>
+            <Setter Property="Height" Value="38"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,0,4,4"/>
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="FontFamily" Value="{StaticResource IconFont}"/>
+        </Style>
+        <!-- Neue Oberfläche (4.11.2026): Menüband mit Reitern, Werkzeugleiste links. Alle bisherigen Bedienelemente (x:Name) sind nur umgezogen. -->
+        <Geometry x:Key="GeoMountain">M2,20 L9,7 L13,13 L16,9 L22,20 Z</Geometry>
+        <Geometry x:Key="GeoHills">M2,20 C5,12 9,12 12,20 C14,15 18,15 22,20</Geometry>
+        <Geometry x:Key="GeoPlateau">M2,20 L6,12 L18,12 L22,20 Z</Geometry>
+        <Geometry x:Key="GeoDome">M3,20 C3,11 8,6 12,6 C16,6 21,11 21,20 Z</Geometry>
+        <Geometry x:Key="GeoChainMountain">M2,17 L7,9 L10,13 L14,5 L17,11 L19,8 L22,17 Z M3,22 L21,22</Geometry>
+        <Geometry x:Key="GeoChainHills">M2,16 C5,8 8,8 10,16 C12,10 15,10 17,16 C18,12 20,12 22,16 M3,22 L21,22</Geometry>
+        <Geometry x:Key="GeoChainPlateau">M2,17 L5,11 L11,11 L13,14 L18,14 L22,17 Z M3,22 L21,22</Geometry>
+        <Geometry x:Key="GeoAsphalt">M8,3 L4,21 M16,3 L20,21 M12,4 L12,7 M12,10 L12,13 M12,16 L12,19</Geometry>
+        <Geometry x:Key="GeoGravel">M9,3 C6,7 15,9 12,13 C9,17 9,19 10,21 M15,3 C12,7 21,9 18,13 C15,17 15,19 16,21 M12,6 L12.1,6 M11,12 L11.1,12 M14,17 L14.1,17 M17,8 L17.1,8</Geometry>
+
+        <Style x:Key="ToolPath" TargetType="Path">
+            <Setter Property="Width" Value="22"/>
+            <Setter Property="Height" Value="22"/>
+            <Setter Property="Stretch" Value="Uniform"/>
+            <Setter Property="StrokeThickness" Value="1.7"/>
+            <Setter Property="StrokeLineJoin" Value="Round"/>
+            <Setter Property="StrokeStartLineCap" Value="Round"/>
+            <Setter Property="StrokeEndLineCap" Value="Round"/>
+            <Setter Property="Stroke" Value="{Binding Path=(TextElement.Foreground), RelativeSource={RelativeSource Self}}"/>
+        </Style>
+
+        <!-- Reiter des Menübands -->
+        <Style x:Key="RibbonTab" TargetType="RadioButton">
+            <Setter Property="Foreground" Value="{DynamicResource SubtleTextBrush}"/>
+            <Setter Property="Padding" Value="16,5"/>
+            <Setter Property="Margin" Value="0,0,2,0"/>
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="Bd" Background="Transparent" BorderBrush="Transparent" BorderThickness="0,3,0,0" CornerRadius="5,5,0,0" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" TextElement.Foreground="{TemplateBinding Foreground}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource ControlHoverBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource CardBrush}"/>
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="RibbonGroup" TargetType="Border">
+            <Setter Property="BorderBrush" Value="{DynamicResource SoftLineBrush}"/>
+            <Setter Property="BorderThickness" Value="0,0,1,0"/>
+            <Setter Property="Padding" Value="10,6,10,0"/>
+        </Style>
+        <Style x:Key="RibbonGroupLabel" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Foreground" Value="{DynamicResource HintTextBrush}"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,2,0,3"/>
+        </Style>
+        <BooleanToVisibilityConverter x:Key="B2V"/>
+        <!-- Gruppe der Werte des gewählten Werkzeugs in der linken Leiste (Titel oben) -->
+        <Style x:Key="PanelGroup" TargetType="Border">
+            <Setter Property="Padding" Value="0"/>
+        </Style>
+        <Style x:Key="PanelGroupLabel" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Margin" Value="0,0,0,8"/>
+        </Style>
+        <Style x:Key="IconBig" TargetType="TextBlock" BasedOn="{StaticResource IconText}">
+            <Setter Property="FontSize" Value="24"/>
+            <Setter Property="Margin" Value="0,0,0,5"/>
+        </Style>
+        <Style x:Key="RibbonBig" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="Width" Value="88"/>
+            <Setter Property="Height" Value="74"/>
+            <Setter Property="Padding" Value="4,4"/>
+            <Setter Property="Margin" Value="0,0,4,0"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+        <Style x:Key="BigText" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="11.5"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="TextAlignment" Value="Center"/>
+            <Setter Property="LineHeight" Value="14"/>
+        </Style>
+        <!-- Werkzeugknopf im Menüband: groß, Symbol und Name, gewählt = Akzentfarbe -->
+        <Style x:Key="RibbonTool" TargetType="ToggleButton">
+            <Setter Property="Width" Value="84"/>
+            <Setter Property="Height" Value="76"/>
+            <Setter Property="Margin" Value="0,0,3,0"/>
+            <Setter Property="Padding" Value="4"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border x:Name="Bd" Background="Transparent" BorderBrush="Transparent" BorderThickness="1" CornerRadius="7" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="True"
+                                TextElement.Foreground="{TemplateBinding Foreground}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource ControlHoverBrush}"/>
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource ControlBorderBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource AccentBrush}"/>
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+                                <Setter TargetName="Bd" Property="TextElement.Foreground" Value="White"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="Bd" Property="Opacity" Value="0.4"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="ToolPathBig" TargetType="Path" BasedOn="{StaticResource ToolPath}">
+            <Setter Property="Width" Value="24"/>
+            <Setter Property="Height" Value="24"/>
+            <Setter Property="Margin" Value="0,0,0,5"/>
+        </Style>
+    </Window.Resources>
+    <DockPanel>
+        <!-- Titelzeile: Logo, Welt, Rückgängig/Wiederholen, Schritte -->
+        <Border DockPanel.Dock="Top" Background="{DynamicResource PanelBrush}" BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,0,0,1" Padding="10,4">
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock x:Name="VersionInfo" Margin="0,0,14,0" VerticalAlignment="Center" FontSize="12" Foreground="{DynamicResource HintTextBrush}"/>
+                    <Button x:Name="TopUndoButton" Padding="10,3" Margin="0,0,6,0" Click="UndoButton_Click" ToolTip="Ctrl+Z"><StackPanel Orientation="Horizontal"><TextBlock Style="{StaticResource IconText}" Text="{x:Static ic:Icons.ArrowCounterclockwise}"/><TextBlock Text="Undo" Margin="6,0,0,0"/></StackPanel></Button>
+                    <Button x:Name="TopRedoButton" Padding="10,3" Margin="0,0,6,0" Click="RedoButton_Click" ToolTip="Ctrl+Y"><StackPanel Orientation="Horizontal"><TextBlock Style="{StaticResource IconText}" Text="{x:Static ic:Icons.ArrowClockwise}"/><TextBlock Text="Redo" Margin="6,0,0,0"/></StackPanel></Button>
+                    <ToggleButton x:Name="StepsToggle" Padding="10,3" Click="StepsToggle_Click"
+                                  ToolTip="Show or hide the &quot;Edit history&quot; window"><StackPanel Orientation="Horizontal"><TextBlock Style="{StaticResource IconText}" Text="{x:Static ic:Icons.List}"/><TextBlock Text="Steps" Margin="6,0,0,0"/></StackPanel></ToggleButton>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock x:Name="WorldName" VerticalAlignment="Center" FontWeight="SemiBold" Text="no world loaded"/>
+                    <TextBlock x:Name="WorldFolderText" Margin="14,0,0,0" VerticalAlignment="Center" Foreground="{DynamicResource HintTextBrush}" FontSize="12" TextTrimming="CharacterEllipsis" MaxWidth="560" Text=""/>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <!-- Reiter des Menübands -->
+        <Border DockPanel.Dock="Top" Background="{DynamicResource TabBarBrush}" BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,0,0,1" Padding="10,4,10,0">
+            <StackPanel Orientation="Horizontal">
+                <RadioButton x:Name="TabWorld" Style="{StaticResource RibbonTab}" GroupName="RibbonTabs" Tag="world" IsChecked="True" Click="RibbonTab_Click" Content="World"/>
+                <RadioButton x:Name="TabTerrain" Style="{StaticResource RibbonTab}" GroupName="RibbonTabs" Tag="terrain" Click="RibbonTab_Click" Content="Terrain"/>
+                <RadioButton x:Name="TabRange" Style="{StaticResource RibbonTab}" GroupName="RibbonTabs" Tag="range" Click="RibbonTab_Click" Content="Mountain ranges"/>
+                <RadioButton x:Name="TabWater" Style="{StaticResource RibbonTab}" GroupName="RibbonTabs" Tag="water" Click="RibbonTab_Click" Content="Water"/>
+                <RadioButton x:Name="TabRoads" Style="{StaticResource RibbonTab}" GroupName="RibbonTabs" Tag="roads" Click="RibbonTab_Click" Content="Roads"/>
+                <RadioButton x:Name="TabSpawn" Style="{StaticResource RibbonTab}" GroupName="RibbonTabs" Tag="spawn" Click="RibbonTab_Click" Content="Spawn points"/>
+                <RadioButton x:Name="TabView" Style="{StaticResource RibbonTab}" GroupName="RibbonTabs" Tag="view" Click="RibbonTab_Click" Content="View"/>
+                <RadioButton x:Name="TabSettings" Style="{StaticResource RibbonTab}" GroupName="RibbonTabs" Tag="settings" Click="RibbonTab_Click" Content="Settings"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Menüband: je Reiter eine Zeile mit Gruppen; bei den Werkzeug-Reitern zeigt sie die Werte des gewählten Werkzeugs -->
+        <Border x:Name="RibbonBody" DockPanel.Dock="Top" Background="{DynamicResource CardBrush}" BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,0,0,1" Height="118">
+            <Grid>
+
+                <!-- Reiter Welt -->
+                <StackPanel x:Name="RibbonWorld" Orientation="Horizontal">
+                    <Border Style="{StaticResource RibbonGroup}">
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Bottom" Style="{StaticResource RibbonGroupLabel}" Text="Project"/>
+                            <StackPanel Orientation="Horizontal">
+                                <Button x:Name="NewProjectButton" Style="{StaticResource RibbonBig}" Click="NewProjectButton_Click"
+                                        ToolTip="Choose a world from GeneratedWorlds; the editor remembers the path and creates a copy in the projects folder (only the copy is edited)">
+                                    <StackPanel><TextBlock Style="{StaticResource IconBig}" Text="{x:Static ic:Icons.FolderPlus}"/><TextBlock Style="{StaticResource BigText}" Text="New project"/></StackPanel>
+                                </Button>
+                                <Button x:Name="OpenButton" Style="{StaticResource RibbonBig}" Click="OpenButton_Click" ToolTip="Open a working copy (folder with dtm.raw)">
+                                    <StackPanel><TextBlock Style="{StaticResource IconBig}" Text="{x:Static ic:Icons.Folder2Open}"/><TextBlock Style="{StaticResource BigText}" Text="Open project"/></StackPanel>
+                                </Button>
+                                <Button x:Name="SaveButton" Style="{StaticResource RibbonBig}" Click="SaveButton_Click" ToolTip="Write all changes to the map files (backup first) – Ctrl+S">
+                                    <StackPanel><TextBlock Style="{StaticResource IconBig}" Text="{x:Static ic:Icons.Floppy}"/><TextBlock Style="{StaticResource BigText}" Text="Save (Ctrl+S)"/></StackPanel>
+                                </Button>
+                            </StackPanel>
+                        </DockPanel>
+                    </Border>
+                    <Border Style="{StaticResource RibbonGroup}">
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Bottom" Style="{StaticResource RibbonGroupLabel}" Text="Creation"/>
+                            <StackPanel Orientation="Horizontal">
+                                <Button x:Name="GenerateButton" Style="{StaticResource RibbonBig}" Click="GenerateButton_Click"
+                                        ToolTip="Create a completely new world with terrain, biomes and a few lakes (without towns, roads and buildings)">
+                                    <StackPanel><TextBlock Style="{StaticResource IconBig}" Text="{x:Static ic:Icons.Magic}"/><TextBlock Style="{StaticResource BigText}" Text="World"/></StackPanel>
+                                </Button>
+                                <Button x:Name="CitiesButton" Style="{StaticResource RibbonBig}" Click="CitiesButton_Click"
+                                        ToolTip="Place towns on the open map like the game does: flat main part, districts at their natural height with winding roads, gateway with the trader of the biome (one step, undo with Ctrl+Z)">
+                                    <StackPanel><TextBlock Style="{StaticResource IconBig}" Text="{x:Static ic:Icons.Buildings}"/><TextBlock Style="{StaticResource BigText}" Text="Towns"/></StackPanel>
+                                </Button>
+                                <Button x:Name="RoadNetButton" Style="{StaticResource RibbonBig}" Click="RoadNetButton_Click"
+                                        ToolTip="Connect the towns with 16 m asphalt roads (Old West: gravel) through valleys and along slopes, with junctions and crossings – plan, check on the map, then build">
+                                    <StackPanel><TextBlock Style="{StaticResource IconBig}" Text="{x:Static ic:Icons.Signpost2}"/><TextBlock Style="{StaticResource BigText}" Text="Roads"/></StackPanel>
+                                </Button>
+                                <Button x:Name="WildernessButton" Style="{StaticResource RibbonBig}" Click="WildernessButton_Click"
+                                        ToolTip="Place buildings in the wilderness like the game does (cabins, camps, caves …) and connect those with a driveway by 5 m gravel paths to the nearest road – plan, check on the map, then build">
+                                    <StackPanel><TextBlock Style="{StaticResource IconBig}" Text="{x:Static ic:Icons.Tree}"/><TextBlock Style="{StaticResource BigText}" Text="Wilderness POIs"/></StackPanel>
+                                </Button>
+                                <Button x:Name="SpreadSpawnButton" Style="{StaticResource RibbonBig}" Click="SpreadSpawnButton_Click"
+                                        ToolTip="Last step: distribute spawn points for playing near gravel paths in the pine forest (replaces the play points; the test point stays)">
+                                    <StackPanel><TextBlock Style="{StaticResource IconBig}" Text="{x:Static ic:Icons.GeoAltFill}"/><TextBlock Style="{StaticResource BigText}" Text="Spawn points"/></StackPanel>
+                                </Button>
+                            </StackPanel>
+                        </DockPanel>
+                    </Border>
+                    <Border Style="{StaticResource RibbonGroup}">
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Bottom" Style="{StaticResource RibbonGroupLabel}" Text="Game"/>
+                            <StackPanel Orientation="Horizontal">
+                                <StackPanel VerticalAlignment="Center">
+                                    <Button x:Name="DeployButton" Style="{StaticResource RibbonBig}" Height="60" Click="DeployButton_Click"
+                                            ToolTip="Copy the saved map into the game; then start a new game there">
+                                        <StackPanel><TextBlock Style="{StaticResource IconBig}" Margin="0,0,0,1" FontSize="18" Text="{x:Static ic:Icons.PlayFill}"/><TextBlock Style="{StaticResource BigText}" Text="Project to game"/></StackPanel>
+                                    </Button>
+                                    <CheckBox x:Name="UseTestSpawnCheck" FontSize="12" Margin="4,4,0,0" Click="UseTestSpawn_Click"
+                                              ToolTip="On: spawnpoints.xml (the file the game reads) is a copy of the test point. Off: a copy of the play points.">
+                                        <TextBlock TextWrapping="Wrap" Text="Use test spawn point"/>
+                                    </CheckBox>
+                                </StackPanel>
+                                <Button x:Name="SaveGameButton" Style="{StaticResource RibbonBig}" Click="SaveGameButton_Click" Margin="8,0,0,0"
+                                        ToolTip="Copy the map changes into an existing save game (preview first, backup of the save)">
+                                    <StackPanel><TextBlock Style="{StaticResource IconBig}" Text="{x:Static ic:Icons.Download}"/><TextBlock Style="{StaticResource BigText}" Text="Project to save game"/></StackPanel>
+                                </Button>
+                            </StackPanel>
+                        </DockPanel>
+                    </Border>
+                </StackPanel>
+
+                <!-- Reiter Spawnpunkte -->
+                <StackPanel x:Name="RibbonSpawn" Orientation="Horizontal" Visibility="Collapsed">
+                    <Border Style="{StaticResource RibbonGroup}">
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Bottom" Style="{StaticResource RibbonGroupLabel}" Text="Set spawn point"/>
+                            <StackPanel Orientation="Horizontal">
+                                <ToggleButton x:Name="AddPlaySpawn" Style="{StaticResource RibbonTool}" Foreground="#D85A30" Click="AddSpawn_Click"
+                                              ToolTip="Set a spawn point for playing: click into the map, drag with the button held for the view direction (Esc = cancel)">
+                                    <StackPanel><TextBlock Style="{StaticResource IconBig}" Text="{x:Static ic:Icons.GeoAltFill}"/><TextBlock Style="{StaticResource BigText}" Text="+ Play"/></StackPanel>
+                                </ToggleButton>
+                                <ToggleButton x:Name="AddTestSpawn" Style="{StaticResource RibbonTool}" Foreground="#534AB7" Click="AddSpawn_Click"
+                                              ToolTip="Set the test point (there is only one; a new one replaces the old one)">
+                                    <StackPanel><TextBlock Style="{StaticResource IconBig}" Text="{x:Static ic:Icons.GeoAltFill}"/><TextBlock Style="{StaticResource BigText}" Text="+ Test"/></StackPanel>
+                                </ToggleButton>
+                            </StackPanel>
+                        </DockPanel>
+                    </Border>
+                    <Border Style="{StaticResource RibbonGroup}">
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Bottom" Style="{StaticResource RibbonGroupLabel}" Text="Spawn points"/>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <StackPanel Margin="0,0,16,0">
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,3">
+                                        <Ellipse Width="10" Height="10" Stroke="#D85A30" StrokeThickness="2.5" Margin="0,0,7,0" VerticalAlignment="Center"/>
+                                        <TextBlock FontSize="12" Width="80" Text="For playing"/>
+                                        <TextBlock x:Name="PlaySpawnCount" FontSize="12" Text="0"/>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                        <Ellipse Width="10" Height="10" Stroke="#534AB7" StrokeThickness="2.5" Margin="0,0,7,0" VerticalAlignment="Center"/>
+                                        <TextBlock FontSize="12" Width="80" Text="For testing"/>
+                                        <TextBlock x:Name="TestSpawnCount" FontSize="12" Text="–"/>
+                                    </StackPanel>
+                                    <CheckBox x:Name="TestAtRoadCheck" FontSize="12" Click="TestAtRoad_Click">
+                                        <TextBlock TextWrapping="Wrap" MaxWidth="170" Text="Put the test point at the start of new roads"/>
+                                    </CheckBox>
+                                </StackPanel>
+                                <Button x:Name="SpawnListButton" Style="{StaticResource RibbonBig}" Click="SpawnList_Click" ToolTip="All spawn points in a list; click an entry to jump there">
+                                    <StackPanel><TextBlock Style="{StaticResource IconBig}" Text="{x:Static ic:Icons.ListUl}"/><TextBlock Style="{StaticResource BigText}" Text="List …"/></StackPanel>
+                                </Button>
+                            </StackPanel>
+                        </DockPanel>
+                    </Border>
+                </StackPanel>
+
+                <!-- Reiter Ansicht -->
+                <StackPanel x:Name="RibbonView" Orientation="Horizontal" Visibility="Collapsed">
+                    <Border Style="{StaticResource RibbonGroup}">
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Bottom" Style="{StaticResource RibbonGroupLabel}" Text="Layers"/>
+                            <StackPanel VerticalAlignment="Center">
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                    <CheckBox x:Name="ShowBiomes" Content="Biomes" IsChecked="True" Width="96" Click="Layer_Click"/>
+                                    <CheckBox x:Name="ShowWater" Content="Water" IsChecked="True" Width="96" Click="Layer_Click"/>
+                                    <CheckBox x:Name="ShowRoads" Content="Roads" IsChecked="True" Width="96" Click="Layer_Click"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <CheckBox x:Name="ShowPrefabs" Content="Buildings" IsChecked="True" Width="96" Click="Layer_Click"/>
+                                    <CheckBox x:Name="ShowParts" Content="Parts" IsChecked="False" Width="96" Click="Layer_Click"
+                                              ToolTip="Small parts (part_…): driveways, street lights, crossings etc. – purple"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </DockPanel>
+                    </Border>
+                    <Border Style="{StaticResource RibbonGroup}">
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Bottom" Style="{StaticResource RibbonGroupLabel}" Text="Zoom"/>
+                            <StackPanel Orientation="Horizontal">
+                                <Button Style="{StaticResource RibbonBig}" Click="FitButton_Click" ToolTip="Show the whole map">
+                                    <StackPanel><TextBlock Style="{StaticResource IconBig}" Text="{x:Static ic:Icons.Fullscreen}"/><TextBlock Style="{StaticResource BigText}" Text="Whole map"/></StackPanel>
+                                </Button>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock FontSize="12" Margin="0,0,0,4" Text="Zoom"/>
+                                    <ComboBox x:Name="ZoomBox" Width="90" IsEditable="True" IsTextSearchEnabled="False" VerticalContentAlignment="Center"
+                                              SelectionChanged="ZoomBox_SelectionChanged" KeyDown="ZoomBox_KeyDown" LostFocus="ZoomBox_LostFocus"
+                                              ToolTip="Current zoom: 100 % = 1 screen pixel per meter, at most 1600 % (mouse wheel or typing). Pick a level or type a number and press Enter."/>
+                                </StackPanel>
+                            </StackPanel>
+                        </DockPanel>
+                    </Border>
+                    <Border Style="{StaticResource RibbonGroup}">
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Bottom" Style="{StaticResource RibbonGroupLabel}" Text="Options"/>
+                            <StackPanel VerticalAlignment="Center">
+                                <CheckBox x:Name="ShowRulerCheck" Margin="0,0,0,8" Click="ShowRuler_Click"
+                                          ToolTip="Rulers along the top and left edge of the map, in meters from the centre of the map">
+                                    <TextBlock Text="Rulers"/>
+                                </CheckBox>
+                                <CheckBox x:Name="DarkThemeCheck" Click="DarkTheme_Click" ToolTip="Dark surroundings for the whole program">
+                                    <TextBlock Text="Dark theme"/>
+                                </CheckBox>
+                            </StackPanel>
+                        </DockPanel>
+                    </Border>
+                </StackPanel>
+
+
+                <!-- Reiter Gelände -->
+                <StackPanel x:Name="RibbonTerrain" Orientation="Horizontal" Visibility="Collapsed">
+                    <!-- alle Werkzeuge dieses Reiters; die Werte des gewählten Werkzeugs stehen links -->
+                    <Border Style="{StaticResource RibbonGroup}">
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Bottom" Style="{StaticResource RibbonGroupLabel}" Text="Tools"/>
+                            <StackPanel Orientation="Horizontal">
+                                <ToggleButton x:Name="RT_Terrain" Style="{StaticResource RibbonTool}" Tag="TerrainTool" Click="RibbonTool_Click"
+                                              ToolTip="Terrain brush: shape the terrain. Roads, buildings and city tiles stay untouched">
+                                    <StackPanel><TextBlock Style="{StaticResource IconBig}" Text="{x:Static ic:Icons.BrushFill}"/><TextBlock Style="{StaticResource BigText}" Text="Terrain brush"/></StackPanel>
+                                </ToggleButton>
+                                <ToggleButton x:Name="RT_Mountain" Style="{StaticResource RibbonTool}" Tag="MtnMountainButton" Click="RibbonTool_Click"
+                                              ToolTip="Mountain: click into the map to place it; hold the mouse button and drag to move it before letting go. R = turn by 45°">
+                                    <StackPanel><Path Style="{StaticResource ToolPathBig}" Data="{StaticResource GeoMountain}"/><TextBlock Style="{StaticResource BigText}" Text="Mountain"/></StackPanel>
+                                </ToggleButton>
+                                <ToggleButton x:Name="RT_Hill" Style="{StaticResource RibbonTool}" Tag="MtnHillButton" Click="RibbonTool_Click" ToolTip="Hill: low, soft hills">
+                                    <StackPanel><Path Style="{StaticResource ToolPathBig}" Data="{StaticResource GeoHills}"/><TextBlock Style="{StaticResource BigText}" Text="Hill"/></StackPanel>
+                                </ToggleButton>
+                                <ToggleButton x:Name="RT_Plateau" Style="{StaticResource RibbonTool}" Tag="MtnPlateauButton" Click="RibbonTool_Click" ToolTip="Plateau: flat-topped mountain with steep edges, like the desert mountains">
+                                    <StackPanel><Path Style="{StaticResource ToolPathBig}" Data="{StaticResource GeoPlateau}"/><TextBlock Style="{StaticResource BigText}" Text="Plateau"/></StackPanel>
+                                </ToggleButton>
+                                <ToggleButton x:Name="RT_Dome" Style="{StaticResource RibbonTool}" Tag="MtnDomeButton" Click="RibbonTool_Click" ToolTip="Dome: simple round hill">
+                                    <StackPanel><Path Style="{StaticResource ToolPathBig}" Data="{StaticResource GeoDome}"/><TextBlock Style="{StaticResource BigText}" Text="Dome"/></StackPanel>
+                                </ToggleButton>
+                                <ToggleButton x:Name="RT_Biome" Style="{StaticResource RibbonTool}" Tag="BiomeTool" Click="RibbonTool_Click" ToolTip="Biome brush: paint the chosen biome into the map; heights stay unchanged">
+                                    <StackPanel><TextBlock Style="{StaticResource IconBig}" Text="{x:Static ic:Icons.Palette}"/><TextBlock Style="{StaticResource BigText}" Text="Biomes"/></StackPanel>
+                                </ToggleButton>
+                            </StackPanel>
+                        </DockPanel>
+                    </Border>
+
+                </StackPanel>
+
+                <!-- Reiter Gebirgsketten -->
+                <StackPanel x:Name="RibbonRange" Orientation="Horizontal" Visibility="Collapsed">
+                    <Border Style="{StaticResource RibbonGroup}">
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Bottom" Style="{StaticResource RibbonGroupLabel}" Text="Tools"/>
+                            <StackPanel Orientation="Horizontal">
+                                <ToggleButton x:Name="RT_RMountain" Style="{StaticResource RibbonTool}" Tag="RngMountainButton" Click="RibbonTool_Click"
+                                              ToolTip="Mountain chain: draw the area freehand; ridges and peaks are built inside it">
+                                    <StackPanel><Path Style="{StaticResource ToolPathBig}" Data="{StaticResource GeoChainMountain}"/><TextBlock Style="{StaticResource BigText}" Text="Mountain chain"/></StackPanel>
+                                </ToggleButton>
+                                <ToggleButton x:Name="RT_RHills" Style="{StaticResource RibbonTool}" Tag="RngHillsButton" Click="RibbonTool_Click" ToolTip="Chain of hills: low, rounded hills in a row">
+                                    <StackPanel><Path Style="{StaticResource ToolPathBig}" Data="{StaticResource GeoChainHills}"/><TextBlock Style="{StaticResource BigText}" Text="Chain of hills"/></StackPanel>
+                                </ToggleButton>
+                                <ToggleButton x:Name="RT_RHighland" Style="{StaticResource RibbonTool}" Tag="RngHighlandButton" Click="RibbonTool_Click" ToolTip="Highland: nearly flat top with steep sides, like a mesa">
+                                    <StackPanel><Path Style="{StaticResource ToolPathBig}" Data="{StaticResource GeoChainPlateau}"/><TextBlock Style="{StaticResource BigText}" Text="Highland"/></StackPanel>
+                                </ToggleButton>
+                            </StackPanel>
+                        </DockPanel>
+                    </Border>
+                </StackPanel>
+
+                <!-- Reiter Wasser -->
+                <StackPanel x:Name="RibbonWater" Orientation="Horizontal" Visibility="Collapsed">
+                    <Border Style="{StaticResource RibbonGroup}">
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Bottom" Style="{StaticResource RibbonGroupLabel}" Text="Tools"/>
+                            <StackPanel Orientation="Horizontal">
+                                <ToggleButton x:Name="RT_Lake" Style="{StaticResource RibbonTool}" Tag="WaterLakeButton" Click="RibbonTool_Click"
+                                              ToolTip="Lake: draw the outline; the ground is dug out to a basin and filled with water">
+                                    <StackPanel><TextBlock Style="{StaticResource IconBig}" Text="{x:Static ic:Icons.Droplet}"/><TextBlock Style="{StaticResource BigText}" Text="Lake"/></StackPanel>
+                                </ToggleButton>
+                                <ToggleButton x:Name="RT_River" Style="{StaticResource RibbonTool}" Tag="WaterRiverButton" Click="RibbonTool_Click"
+                                              ToolTip="River: draw a line; a channel of the set width is dug along it and filled with water">
+                                    <StackPanel><TextBlock Style="{StaticResource IconBig}" Text="{x:Static ic:Icons.Water}"/><TextBlock Style="{StaticResource BigText}" Text="River"/></StackPanel>
+                                </ToggleButton>
+                                <ToggleButton x:Name="RT_Crater" Style="{StaticResource RibbonTool}" Tag="WaterCraterButton" Click="RibbonTool_Click"
+                                              ToolTip="Fill craters: drag the brush through craters; each one is filled with water up to just below its rim. The ground stays as it is">
+                                    <StackPanel><TextBlock Style="{StaticResource IconBig}" Text="{x:Static ic:Icons.Bullseye}"/><TextBlock Style="{StaticResource BigText}" Text="Fill craters"/></StackPanel>
+                                </ToggleButton>
+                                <ToggleButton x:Name="RT_Dry" Style="{StaticResource RibbonTool}" Tag="WaterDryButton" Click="RibbonTool_Click"
+                                              ToolTip="Remove water: draw an area; only the water in it disappears, the ground stays as it is">
+                                    <StackPanel><TextBlock Style="{StaticResource IconBig}" Text="{x:Static ic:Icons.Sun}"/><TextBlock Style="{StaticResource BigText}" Text="Remove water"/></StackPanel>
+                                </ToggleButton>
+                            </StackPanel>
+                        </DockPanel>
+                    </Border>
+                </StackPanel>
+
+                <!-- Reiter Straßen -->
+                <StackPanel x:Name="RibbonRoads" Orientation="Horizontal" Visibility="Collapsed">
+                    <Border Style="{StaticResource RibbonGroup}">
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Bottom" Style="{StaticResource RibbonGroupLabel}" Text="Tools"/>
+                            <StackPanel Orientation="Horizontal">
+                                <ToggleButton x:Name="RT_Asphalt" Style="{StaticResource RibbonTool}" Tag="AsphaltTool" Click="RibbonTool_Click" ToolTip="Draw an asphalt road">
+                                    <StackPanel><Path Style="{StaticResource ToolPathBig}" Data="{StaticResource GeoAsphalt}" /><TextBlock Style="{StaticResource BigText}" Text="Asphalt"/></StackPanel>
+                                </ToggleButton>
+                                <ToggleButton x:Name="RT_Gravel" Style="{StaticResource RibbonTool}" Tag="GravelTool" Click="RibbonTool_Click" ToolTip="Draw a gravel road">
+                                    <StackPanel><Path Style="{StaticResource ToolPathBig}" Data="{StaticResource GeoGravel}" /><TextBlock Style="{StaticResource BigText}" Text="Gravel"/></StackPanel>
+                                </ToggleButton>
+                                <ToggleButton x:Name="RT_RoadEdit" Style="{StaticResource RibbonTool}" Tag="RoadEditTool" Click="RibbonTool_Click"
+                                              ToolTip="Edit road: click onto an existing road: the marker snaps to the middle of the road. With two or more markers you can change the height, the grade and the banking (cross slope) of the road between them.">
+                                    <StackPanel><TextBlock Style="{StaticResource IconBig}" Text="{x:Static ic:Icons.PencilSquare}"/><TextBlock Style="{StaticResource BigText}" Text="Edit road"/></StackPanel>
+                                </ToggleButton>
+                                <ToggleButton x:Name="RT_Eraser" Style="{StaticResource RibbonTool}" Tag="EraserTool" Click="RibbonTool_Click" ToolTip="Eraser: paint over remains of asphalt or gravel: the surface disappears">
+                                    <StackPanel><TextBlock Style="{StaticResource IconBig}" Text="{x:Static ic:Icons.Eraser}"/><TextBlock Style="{StaticResource BigText}" Text="Eraser"/></StackPanel>
+                                </ToggleButton>
+                            </StackPanel>
+                        </DockPanel>
+                    </Border>
+                </StackPanel>
+
+                <!-- Reiter Einstellungen -->
+                <StackPanel x:Name="RibbonSettings" Orientation="Horizontal" Visibility="Collapsed">
+                    <Border Style="{StaticResource RibbonGroup}">
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Bottom" Style="{StaticResource RibbonGroupLabel}" Text="Folders and game"/>
+                            <Button Style="{StaticResource RibbonBig}" Click="SettingsPage_Click" Tag="0"
+                                    ToolTip="Folder of all projects, game folder, worlds remembered from the game">
+                                <StackPanel><TextBlock Style="{StaticResource IconBig}" Text="{x:Static ic:Icons.Folder2Open}"/><TextBlock Style="{StaticResource BigText}" Text="Paths"/></StackPanel>
+                            </Button>
+                        </DockPanel>
+                    </Border>
+                    <Border Style="{StaticResource RibbonGroup}">
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Bottom" Style="{StaticResource RibbonGroupLabel}" Text="Language"/>
+                            <StackPanel VerticalAlignment="Center">
+                                <ComboBox x:Name="RibbonLanguageBox" Width="150" DisplayMemberPath="Name" SelectionChanged="RibbonLanguage_Changed"
+                                          ToolTip="Language of the program; takes effect at once"/>
+                            </StackPanel>
+                        </DockPanel>
+                    </Border>
+                    <Border Style="{StaticResource RibbonGroup}">
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Bottom" Style="{StaticResource RibbonGroupLabel}" Text="Backups"/>
+                            <StackPanel Orientation="Horizontal">
+                                <Button Style="{StaticResource RibbonBig}" Click="OpenBackups_Click" ToolTip="Open the folder with the backups of this project">
+                                    <StackPanel><TextBlock Style="{StaticResource IconBig}" Text="{x:Static ic:Icons.ClockHistory}"/><TextBlock Style="{StaticResource BigText}" Text="Project backups"/></StackPanel>
+                                </Button>
+                                <Button Style="{StaticResource RibbonBig}" Click="OpenErrorLog_Click" ToolTip="Log of errors (send it along when something goes wrong)">
+                                    <StackPanel><TextBlock Style="{StaticResource IconBig}" Text="{x:Static ic:Icons.ExclamationTriangle}"/><TextBlock Style="{StaticResource BigText}" Text="Error log"/></StackPanel>
+                                </Button>
+                            </StackPanel>
+                        </DockPanel>
+                    </Border>
+                    <Border Style="{StaticResource RibbonGroup}">
+                        <DockPanel>
+                            <TextBlock x:Name="VersionGroupLabel" DockPanel.Dock="Bottom" Style="{StaticResource RibbonGroupLabel}" Text="Info"/>
+                            <StackPanel Orientation="Horizontal">
+                                <Button Style="{StaticResource RibbonBig}" Click="OpenChangelog_Click" ToolTip="What is new in which version">
+                                    <StackPanel><TextBlock Style="{StaticResource IconBig}" Text="{x:Static ic:Icons.FileEarmarkText}"/><TextBlock Style="{StaticResource BigText}" Text="Version history"/></StackPanel>
+                                </Button>
+                                <Button x:Name="SettingsButton" Style="{StaticResource RibbonBig}" Click="SettingsButton_Click" ToolTip="Version, language and credits">
+                                    <StackPanel><TextBlock Style="{StaticResource IconBig}" Text="{x:Static ic:Icons.InfoCircle}"/><TextBlock Style="{StaticResource BigText}" Text="About YAMEE"/></StackPanel>
+                                </Button>
+                            </StackPanel>
+                        </DockPanel>
+                    </Border>
+                </StackPanel>
+
+                <!-- Logo (Assets/yamee_logo.png aus yamee_logo.svg mit tools\render_logo.ps1): immer ganz rechts im Menüband (Wunsch des Nutzers 5.11.2026) -->
+                <Image Source="Assets/yamee_logo.png" Height="80" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,16,0"
+                       IsHitTestVisible="True" RenderOptions.BitmapScalingMode="HighQuality" ToolTip="YAMEE – Yet Another Map Editor Extra"/>
+            </Grid>
+        </Border>
+
+        <!-- Statusleiste -->
+        <Border DockPanel.Dock="Bottom" Background="{DynamicResource PanelBrush}" BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,1,0,0" Padding="10,4">
+            <DockPanel>
+                <TextBlock x:Name="HelpText" DockPanel.Dock="Right" Foreground="{DynamicResource SubtleTextBrush}" Text="Mouse wheel: zoom · drag with left button: move · click a building: show it in the list"/>
+                <TextBlock x:Name="ChangesText" DockPanel.Dock="Right" Margin="16,0" TextWrapping="NoWrap" FontSize="12" Text=""/>
+                <TextBlock x:Name="PositionText" Width="420" Text=""/>
+                <TextBlock x:Name="PrefabText" Text="" TextTrimming="CharacterEllipsis"/>
+            </DockPanel>
+        </Border>
+
+        <!-- Links: die Werte des gewählten Werkzeugs (Wunsch des Nutzers 4.11.2026; vorher Symbole der Werkzeuge) -->
+        <Border x:Name="LeftPanel" DockPanel.Dock="Left" Width="324" Background="{DynamicResource SidebarBrush}" BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,0,1,0">
+            <Grid>
+            <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,0,6,0">
+                <StackPanel Margin="14,12,8,12">
+                    <!-- Terrain-Pinsel -->
+                    <Border x:Name="GroupTerrain" Style="{StaticResource PanelGroup}" Visibility="Collapsed">
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Top" Style="{StaticResource PanelGroupLabel}" Text="Terrain brush"/><Button DockPanel.Dock="Bottom" HorizontalAlignment="Left" Margin="0,10,0,0" Style="{StaticResource FormButton}" Tag="terrain" Click="ResetTool_Click" ToolTip="Load the values of this tool from default.ini (your changes in user.ini are removed)"><StackPanel Orientation="Horizontal"><TextBlock Style="{StaticResource IconText}" Text="{x:Static ic:Icons.ArrowRepeat}"/><TextBlock Text="Reset values" Margin="6,0,0,0"/></StackPanel></Button>
+                            <StackPanel>
+                                <StackPanel>
+                                    <DockPanel Style="{StaticResource FormRow}">
+                                        <TextBlock Style="{StaticResource FormLabel}" Text="Kind"/>
+                                        <ComboBox Style="{StaticResource FormCombo}" x:Name="TerrainKindBox" SelectionChanged="TerrainKindBox_SelectionChanged">
+                                            <ComboBoxItem Content="Smooth" ToolTip="Evens out bumps and hollows"/>
+                                            <ComboBoxItem Content="Raise" ToolTip="Raises the ground with a soft edge"/>
+                                            <ComboBoxItem Content="Lower" ToolTip="Lowers the ground with a soft edge"/>
+                                            <ComboBoxItem Content="Flatten" ToolTip="Levels the ground to the height where the stroke starts"/>
+                                            <ComboBoxItem Content="Light bumps" ToolTip="Makes the ground naturally uneven"/>
+                                            <ComboBoxItem Content="Weather" ToolTip="Steep edges slide down and become soft slopes"/>
+                                        </ComboBox>
+                                    </DockPanel>
+                                    <DockPanel Style="{StaticResource FormRow}">
+                                        <TextBlock Style="{StaticResource FormLabel}" Text="Brush shape"/>
+                                        <ComboBox Style="{StaticResource FormCombo}" x:Name="TerrainShapeBox" SelectedIndex="0" SelectionChanged="TerrainShapeBox_SelectionChanged">
+                                            <ComboBoxItem Content="Round"/>
+                                            <ComboBoxItem Content="Square"/>
+                                            <ComboBoxItem Content="Diamond"/>
+                                            <ComboBoxItem Content="Hexagon"/>
+                                            <ComboBoxItem Content="Ellipse"/>
+                                            <ComboBoxItem Content="Cross"/>
+                                            <ComboBoxItem Content="Star"/>
+                                            <ComboBoxItem Content="Blob"/>
+                                            <ComboBoxItem Content="Random" ToolTip="Every left click gets a new, irregular shape. The outline at the mouse pointer shows the shape of the next stroke"/>
+                                        </ComboBox>
+                                    </DockPanel>
+                                    <DockPanel Style="{StaticResource FormRow}">
+                                        <TextBlock Style="{StaticResource FormLabel}" Text="Brush size (m)"/>
+                                        <TextBox x:Name="TerrainSizeBox" Style="{StaticResource FormField}" Text="32" LostFocus="TerrainValue_Changed" KeyDown="TerrainValue_KeyDown"/>
+                                    </DockPanel>
+                                </StackPanel>
+                                <StackPanel>
+                                    <DockPanel Style="{StaticResource FormRow}">
+                                        <TextBlock x:Name="TerrainStrengthLabel" Style="{StaticResource FormLabel}" Text="Strength (%)"/>
+                                        <TextBox x:Name="TerrainStrengthBox" Style="{StaticResource FormField}" Text="50" LostFocus="TerrainValue_Changed" KeyDown="TerrainValue_KeyDown"/>
+                                    </DockPanel>
+                                    <DockPanel Style="{StaticResource FormRow}">
+                                        <TextBlock Style="{StaticResource FormLabel}" Text="Soft edge (%)" ToolTip="0 = hard edge, 100 = soft from the centre to the edge"/>
+                                        <TextBox x:Name="TerrainSoftBox" Style="{StaticResource FormField}" Text="60" LostFocus="TerrainValue_Changed" KeyDown="TerrainValue_KeyDown"/>
+                                    </DockPanel>
+                                </StackPanel>
+                                <StackPanel>
+                            <StackPanel>
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource FormSection}" Text="Road"/>
+                                    <DockPanel Style="{StaticResource FormRow}">
+                                        <TextBlock Style="{StaticResource FormLabel}" Text="Roads"/>
+                                        <ComboBox Style="{StaticResource FormCombo}" x:Name="TerrainRoadsBox" SelectedIndex="0" SelectionChanged="TerrainRoadsBox_SelectionChanged">
+                                            <ComboBoxItem Content="Keep fixed" ToolTip="Roads do not change at all; the brush fades out 6 m before them"/>
+                                            <ComboBoxItem Content="Influence lightly" ToolTip="Roads follow the terrain by about 30 %; the ground next to them blends smoothly"/>
+                                            <ComboBoxItem Content="Include" ToolTip="Roads are shaped like the rest of the ground. Check the grade warning afterwards"/>
+                                        </ComboBox>
+                                    </DockPanel>
+                                    <StackPanel x:Name="TerrainRoadOptions">
+                                        <DockPanel Style="{StaticResource FormRow}">
+                                            <TextBlock Style="{StaticResource FormLabel}" Text="Road cross-section"/>
+                                            <ComboBox Style="{StaticResource FormCombo}" x:Name="TerrainTiltBox" SelectedIndex="0" SelectionChanged="TerrainTiltBox_SelectionChanged">
+                                            <ComboBoxItem Content="Level (whole width)" ToolTip="The whole road width is changed equally, however wide the brush is. The road stays smooth"/>
+                                            <ComboBoxItem Content="Allow tilt" ToolTip="The road may tilt sideways when the ground next to it changes; the edges are smoothed so no artifacts appear"/>
+                                        </ComboBox>
+                                        </DockPanel>
+                                        <DockPanel Style="{StaticResource FormRow}">
+                                            <CheckBox Style="{StaticResource FormCheck}" x:Name="TerrainLimitCheck" Click="TerrainLimit_Click"
+                                                      Content="Limit road grade" ToolTip="The road never becomes steeper than this value; the effect near the road is reduced if needed"/>
+                                        </DockPanel>
+                                        <DockPanel Style="{StaticResource FormRow}">
+                                            <TextBlock Style="{StaticResource FormLabel}" Text="Maximum grade (%)"/>
+                                            <TextBox x:Name="TerrainMaxGradeBox" Style="{StaticResource FormField}" Text="25" LostFocus="TerrainValue_Changed" KeyDown="TerrainValue_KeyDown"/>
+                                        </DockPanel>
+                                    </StackPanel>
+                                </StackPanel>
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource FormSection}" Text="Buildings and limits"/>
+                                    <DockPanel Style="{StaticResource FormRow}">
+                                        <TextBlock Style="{StaticResource FormLabel}" Text="Buildings"/>
+                                        <ComboBox Style="{StaticResource FormCombo}" x:Name="TerrainPoisBox" SelectedIndex="0" SelectionChanged="TerrainPoisBox_SelectionChanged">
+                                            <ComboBoxItem Content="Keep fixed" ToolTip="Buildings stay where they are; the brush fades out 6 m before them"/>
+                                            <ComboBoxItem Content="Move lightly" ToolTip="Buildings follow the terrain by about 30 %, in whole metres; the ground around them blends smoothly"/>
+                                            <ComboBoxItem Content="Move along" ToolTip="Buildings are lifted or lowered with the ground in whole metres; their driveways go with them. City tiles never move"/>
+                                        </ComboBox>
+                                    </DockPanel>
+                                    <DockPanel Style="{StaticResource FormRow}">
+                                        <CheckBox Style="{StaticResource FormCheck}" x:Name="TerrainHeightCheck" Click="TerrainHeightCheck_Click"
+                                                  Content="Limit height (m)" ToolTip="The brush can only reach heights between the minimum and the maximum. What would go above or below is levelled off softly"/>
+                                    </DockPanel>
+                                    <StackPanel x:Name="TerrainHeightRow">
+                                        <DockPanel Style="{StaticResource FormRow}">
+                                            <TextBlock Style="{StaticResource FormLabel}" Text="Min"/>
+                                            <TextBox x:Name="TerrainMinBox" Style="{StaticResource FormField}" Text="30" LostFocus="TerrainValue_Changed" KeyDown="TerrainValue_KeyDown"/>
+                                        </DockPanel>
+                                        <DockPanel Style="{StaticResource FormRow}">
+                                            <TextBlock Style="{StaticResource FormLabel}" Text="Max"/>
+                                            <TextBox x:Name="TerrainMaxBox" Style="{StaticResource FormField}" Text="60" LostFocus="TerrainValue_Changed" KeyDown="TerrainValue_KeyDown"/>
+                                        </DockPanel>
+                                    </StackPanel>
+                                </StackPanel>
+                            </StackPanel>
+                        </StackPanel>
+                            </StackPanel>
+                        </DockPanel>
+                    </Border>
+                    
+
+                    <!-- Berge, Hügel, Plateau, Kuppe: ein Werkzeug, die Art wählt man im Menüband -->
+                    <Border x:Name="GroupMountain" Style="{StaticResource PanelGroup}" Visibility="Collapsed">
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Top" x:Name="MountainTitle" Style="{StaticResource PanelGroupLabel}" Text="Mountain"/><Button DockPanel.Dock="Bottom" HorizontalAlignment="Left" Margin="0,10,0,0" Style="{StaticResource FormButton}" Tag="mountain" Click="ResetTool_Click" ToolTip="Load the values of this tool from default.ini (your changes in user.ini are removed)"><StackPanel Orientation="Horizontal"><TextBlock Style="{StaticResource IconText}" Text="{x:Static ic:Icons.ArrowRepeat}"/><TextBlock Text="Reset values" Margin="6,0,0,0"/></StackPanel></Button>
+                            <StackPanel>
+                                <StackPanel>
+                                    <DockPanel Style="{StaticResource FormRow}" Visibility="Collapsed">
+                                        <TextBlock Style="{StaticResource FormLabel}" Text="Kind"/>
+                                        <ComboBox Style="{StaticResource FormCombo}" x:Name="MountainKindBox" SelectionChanged="MountainKindBox_SelectionChanged">
+                                            <ComboBoxItem Content="Mountain" ToolTip="Mountain range with ridges, like the ones the game generates in forest, burnt forest and snow"/>
+                                            <ComboBoxItem Content="Plateau" ToolTip="Flat-topped mountain with steep edges, like the desert mountains"/>
+                                            <ComboBoxItem Content="Hill" ToolTip="Low, soft hills"/>
+                                            <ComboBoxItem Content="Dome" ToolTip="Simple round hill"/>
+                                        </ComboBox>
+                                    </DockPanel>
+                                    <DockPanel Style="{StaticResource FormRow}">
+                                        <TextBlock Style="{StaticResource FormLabel}" Text="Shape"/>
+                                        <ComboBox Style="{StaticResource FormCombo}" x:Name="MountainVariantBox" Width="92" SelectedIndex="0" SelectionChanged="MountainVariantBox_SelectionChanged">
+                                            <ComboBoxItem Content="Form 1"/>
+                                            <ComboBoxItem Content="Form 2"/>
+                                        </ComboBox>
+                                        <Button Style="{StaticResource FormButton}" x:Name="MountainDiceButton" Click="MountainDice_Click"
+                                                ToolTip="Random: picks the shape, rotation and mirroring"><TextBlock Style="{StaticResource IconText}" Text="{x:Static ic:Icons.Dice5}"/></Button>
+                                    </DockPanel>
+                                    <DockPanel Style="{StaticResource FormRow}">
+                                        <TextBlock Style="{StaticResource FormLabel}" Text="Height (m)"
+                                                   ToolTip="Height of the peak above the ground. Typical in the game: pine forest 55, burnt forest 85, desert 42, snow 95. Negative = hollow"/>
+                                        <TextBox x:Name="MountainHeightBox" Style="{StaticResource FormField}" Text="90" LostFocus="MountainValue_Changed" KeyDown="MountainValue_KeyDown"/>
+                                    </DockPanel>
+                                </StackPanel>
+                                <StackPanel>
+                                    <DockPanel Style="{StaticResource FormRow}">
+                                        <TextBlock Style="{StaticResource FormLabel}" Text="Size (m)" ToolTip="Width of the footprint. The game's mountains are about 300 to 600 m wide"/>
+                                        <TextBox x:Name="MountainSizeBox" Style="{StaticResource FormField}" Text="600" LostFocus="MountainValue_Changed" KeyDown="MountainValue_KeyDown"/>
+                                    </DockPanel>
+                                    <DockPanel Style="{StaticResource FormRow}">
+                                        <TextBlock Style="{StaticResource FormLabel}" Text="Rotation (°)"/>
+                                        <TextBox x:Name="MountainRotationBox" Style="{StaticResource FormField}" Text="0" LostFocus="MountainValue_Changed" KeyDown="MountainValue_KeyDown"/>
+                                        <CheckBox Style="{StaticResource FormCheck}" x:Name="MountainMirrorCheck" Margin="14,0,0,0" Click="MountainMirror_Click" Content="Mirror"/>
+                                    </DockPanel>
+                                    <DockPanel Style="{StaticResource FormRow}">
+                                        <TextBlock Style="{StaticResource FormLabel}" Text="Steepness (%)"
+                                                   ToolTip="100 = shape as in the game. More = sharper peak and flatter foot, less = broader and rounder"/>
+                                        <TextBox x:Name="MountainSteepBox" Style="{StaticResource FormField}" Text="100" LostFocus="MountainValue_Changed" KeyDown="MountainValue_KeyDown"/>
+                                    </DockPanel>
+                                </StackPanel>
+                                <StackPanel>
+                                    <DockPanel Style="{StaticResource FormRow}">
+                                        <TextBlock Style="{StaticResource FormLabel}" Text="Ruggedness (%)"
+                                                   ToolTip="Fine bumps on the mountain. 0 = smooth, 100 = very rugged"/>
+                                        <TextBox x:Name="MountainRoughBox" Style="{StaticResource FormField}" Text="30" LostFocus="MountainValue_Changed" KeyDown="MountainValue_KeyDown"/>
+                                    </DockPanel>
+                                </StackPanel>
+                                <StackPanel>
+                            <StackPanel>
+                                <TextBlock Style="{StaticResource FormSection}" Text="Under the mountain"/>
+                                <DockPanel Style="{StaticResource FormRow}">
+                                    <TextBlock Style="{StaticResource FormLabel}" Text="Roads"/>
+                                    <ComboBox Style="{StaticResource FormCombo}" x:Name="MountainRoadsBox" SelectedIndex="0" SelectionChanged="MountainRoadsBox_SelectionChanged">
+                                        <ComboBoxItem Content="Keep fixed" ToolTip="Roads do not change at all; the mountain fades out 6 m before them, which can leave steep walls next to the road"/>
+                                        <ComboBoxItem Content="Influence lightly" ToolTip="Roads follow the terrain by about 30 %; the ground next to them blends smoothly"/>
+                                        <ComboBoxItem Content="Include" ToolTip="Roads are lifted with the mountain, within the road grade limit of the terrain brush"/>
+                                    </ComboBox>
+                                </DockPanel>
+                                <DockPanel Style="{StaticResource FormRow}">
+                                    <TextBlock Style="{StaticResource FormLabel}" Text="Buildings"/>
+                                    <ComboBox Style="{StaticResource FormCombo}" x:Name="MountainPoisBox" SelectedIndex="0" SelectionChanged="MountainPoisBox_SelectionChanged">
+                                        <ComboBoxItem Content="Keep fixed" ToolTip="Buildings stay where they are; the mountain fades out 6 m before them"/>
+                                        <ComboBoxItem Content="Move lightly" ToolTip="Buildings follow the terrain by about 30 %, in whole metres; the ground around them blends smoothly"/>
+                                        <ComboBoxItem Content="Move along" ToolTip="Buildings are lifted with the ground in whole metres; their driveways go with them. City tiles never move"/>
+                                    </ComboBox>
+                                </DockPanel>
+                            </StackPanel>
+                        </StackPanel>
+                            </StackPanel>
+                        </DockPanel>
+                    </Border>
+                    
+
+                    <!-- Biom-Pinsel -->
+                    <Border x:Name="GroupBiome" Style="{StaticResource PanelGroup}" Visibility="Collapsed">
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Top" Style="{StaticResource PanelGroupLabel}" Text="Biomes"/><Button DockPanel.Dock="Bottom" HorizontalAlignment="Left" Margin="0,10,0,0" Style="{StaticResource FormButton}" Tag="biome" Click="ResetTool_Click" ToolTip="Load the values of this tool from default.ini (your changes in user.ini are removed)"><StackPanel Orientation="Horizontal"><TextBlock Style="{StaticResource IconText}" Text="{x:Static ic:Icons.ArrowRepeat}"/><TextBlock Text="Reset values" Margin="6,0,0,0"/></StackPanel></Button>
+                            <StackPanel>
+                                <DockPanel Style="{StaticResource FormRow}">
+                                    <TextBlock Style="{StaticResource FormLabel}" Text="Biome"/>
+                                    <ComboBox Style="{StaticResource FormCombo}" x:Name="BiomeBox" SelectionChanged="BiomeBox_SelectionChanged" ToolTip="Biome to paint"/>
+                                </DockPanel>
+                                <DockPanel Style="{StaticResource FormRow}">
+                                    <TextBlock Style="{StaticResource FormLabel}" Text="Brush shape"/>
+                                    <RadioButton Style="{StaticResource FormRadio}" x:Name="BiomeRoundRadio" Content="Round" IsChecked="True" GroupName="BiomeShape" Click="BiomeShape_Click"/>
+                                    <RadioButton Style="{StaticResource FormRadio}" x:Name="BiomeSquareRadio" Content="Square" GroupName="BiomeShape" Click="BiomeShape_Click"/>
+                                </DockPanel>
+                                <DockPanel Style="{StaticResource FormRow}">
+                                    <TextBlock Style="{StaticResource FormLabel}" Text="Brush size (m)"/>
+                                    <TextBox x:Name="BiomeSizeBox" Style="{StaticResource FormField}" Text="32" LostFocus="BiomeSize_Changed" KeyDown="BiomeSize_KeyDown"/>
+                                </DockPanel>
+                            </StackPanel>
+                        </DockPanel>
+                    </Border>
+                    <Border x:Name="GroupRange" Style="{StaticResource PanelGroup}" Visibility="Collapsed">
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Top" x:Name="RangeTitle" Style="{StaticResource PanelGroupLabel}" Text="Mountain chain"/><Button DockPanel.Dock="Bottom" HorizontalAlignment="Left" Margin="0,10,0,0" Style="{StaticResource FormButton}" Tag="range" Click="ResetTool_Click" ToolTip="Load the values of this tool from default.ini (your changes in user.ini are removed)"><StackPanel Orientation="Horizontal"><TextBlock Style="{StaticResource IconText}" Text="{x:Static ic:Icons.ArrowRepeat}"/><TextBlock Text="Reset values" Margin="6,0,0,0"/></StackPanel></Button>
+                            <StackPanel>
+                                <StackPanel>
+                                    <DockPanel Style="{StaticResource FormRow}" Visibility="Collapsed">
+                                        <TextBlock Style="{StaticResource FormLabel}" Text="Kind"/>
+                                        <ComboBox Style="{StaticResource FormCombo}" x:Name="RangeKindBox" SelectionChanged="RangeKindBox_SelectionChanged">
+                                            <ComboBoxItem Content="Mountain chain" ToolTip="Ridges and peaks inside the area you draw"/>
+                                            <ComboBoxItem Content="Chain of hills" ToolTip="Low, rounded hills in a row"/>
+                                            <ComboBoxItem Content="Highland" ToolTip="Nearly flat top with steep sides, like a mesa"/>
+                                        </ComboBox>
+                                    </DockPanel>
+                                    <DockPanel Style="{StaticResource FormRow}">
+                                        <TextBlock Style="{StaticResource FormLabel}" Text="Foothills"
+                                                   ToolTip="How the chain falls off at the edge of the area. Mixed = changes along the edge"/>
+                                        <ComboBox Style="{StaticResource FormCombo}" x:Name="RangeEdgeBox" SelectedIndex="3" SelectionChanged="RangeEdgeBox_SelectionChanged">
+                                            <ComboBoxItem Content="Gentle" ToolTip="Long, flat slopes"/>
+                                            <ComboBoxItem Content="Steep" ToolTip="Rises quickly at the edge"/>
+                                            <ComboBoxItem Content="Broken" ToolTip="Rock steps with walls, almost cut off"/>
+                                            <ComboBoxItem Content="Mixed" ToolTip="Gentle, steep and broken edges alternate along the outline"/>
+                                        </ComboBox>
+                                    </DockPanel>
+                                    <DockPanel Style="{StaticResource FormRow}">
+                                        <TextBlock Style="{StaticResource FormLabel}" Text="Height (m)"
+                                                   ToolTip="Height of the highest peak above the ground. Negative = hollow"/>
+                                        <TextBox x:Name="RangeHeightBox" Style="{StaticResource FormField}" Text="90" LostFocus="RangeValue_Changed" KeyDown="RangeValue_KeyDown"/>
+                                    </DockPanel>
+                                </StackPanel>
+                                <StackPanel>
+                                    <DockPanel Style="{StaticResource FormRow}">
+                                        <TextBlock Style="{StaticResource FormLabel}" Text="Slope width (m)"
+                                                   ToolTip="How far the slope reaches from the edge towards the inside. Small = steep walls and a wide top, large = the whole area is one slope. Gentle foothills may reach beyond the drawn line if the area is too narrow for them"/>
+                                        <TextBox x:Name="RangeFootBox" Style="{StaticResource FormField}" Text="150" LostFocus="RangeValue_Changed" KeyDown="RangeValue_KeyDown"/>
+                                    </DockPanel>
+                                    <DockPanel Style="{StaticResource FormRow}">
+                                        <TextBlock Style="{StaticResource FormLabel}" Text="Peak spacing (m)"
+                                                   ToolTip="Distance between ridges and peaks. Small = many small peaks, large = few big ones"/>
+                                        <TextBox x:Name="RangeSpacingBox" Style="{StaticResource FormField}" Text="250" LostFocus="RangeValue_Changed" KeyDown="RangeValue_KeyDown"/>
+                                    </DockPanel>
+                                    <DockPanel Style="{StaticResource FormRow}">
+                                        <TextBlock Style="{StaticResource FormLabel}" Text="Craggedness (%)"
+                                                   ToolTip="Sharp peaks and rocky ridges on the high parts, with a few smoother spots in between. 0 = rounded tops, 100 = very craggy"/>
+                                        <TextBox x:Name="RangeCragBox" Style="{StaticResource FormField}" Text="60" LostFocus="RangeValue_Changed" KeyDown="RangeValue_KeyDown"/>
+                                    </DockPanel>
+                                </StackPanel>
+                                <StackPanel>
+                                    <DockPanel Style="{StaticResource FormRow}">
+                                        <TextBlock Style="{StaticResource FormLabel}" Text="Ruggedness (%)"
+                                                   ToolTip="Fine bumps on the mountain. 0 = smooth, 100 = very rugged"/>
+                                        <TextBox x:Name="RangeRoughBox" Style="{StaticResource FormField}" Text="30" LostFocus="RangeValue_Changed" KeyDown="RangeValue_KeyDown"/>
+                                    </DockPanel>
+                                </StackPanel>
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource FormSection}" Text="Under the chain"/>
+                                    <DockPanel Style="{StaticResource FormRow}">
+                                        <TextBlock Style="{StaticResource FormLabel}" Text="Roads"/>
+                                        <ComboBox Style="{StaticResource FormCombo}" x:Name="RangeRoadsBox" SelectedIndex="0" SelectionChanged="RangeRoadsBox_SelectionChanged">
+                                            <ComboBoxItem Content="Keep fixed" ToolTip="Roads do not change at all; the chain fades out 6 m before them, which can leave steep walls next to the road"/>
+                                            <ComboBoxItem Content="Influence lightly" ToolTip="Roads follow the terrain by about 30 %; the ground next to them blends smoothly"/>
+                                            <ComboBoxItem Content="Include" ToolTip="Roads are lifted with the chain, within the road grade limit of the terrain brush"/>
+                                        </ComboBox>
+                                    </DockPanel>
+                                    <DockPanel Style="{StaticResource FormRow}">
+                                        <TextBlock Style="{StaticResource FormLabel}" Text="Buildings"/>
+                                        <ComboBox Style="{StaticResource FormCombo}" x:Name="RangePoisBox" SelectedIndex="0" SelectionChanged="RangePoisBox_SelectionChanged">
+                                            <ComboBoxItem Content="Keep fixed" ToolTip="Buildings stay where they are; the chain fades out 6 m before them"/>
+                                            <ComboBoxItem Content="Move lightly" ToolTip="Buildings follow the terrain by about 30 %, in whole metres; the ground around them blends smoothly"/>
+                                            <ComboBoxItem Content="Move along" ToolTip="Buildings are lifted with the ground in whole metres; their driveways go with them. City tiles never move"/>
+                                        </ComboBox>
+                                    </DockPanel>
+                                </StackPanel>
+                            </StackPanel>
+                        </DockPanel>
+                    </Border>
+                    <Border x:Name="GroupWater" Style="{StaticResource PanelGroup}" Visibility="Collapsed">
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Top" x:Name="WaterTitle" Style="{StaticResource PanelGroupLabel}" Text="Lake"/><Button x:Name="WaterResetButton" DockPanel.Dock="Bottom" HorizontalAlignment="Left" Margin="0,10,0,0" Style="{StaticResource FormButton}" Tag="water" Click="ResetTool_Click" ToolTip="Load the values of this tool from default.ini (your changes in user.ini are removed)"><StackPanel Orientation="Horizontal"><TextBlock Style="{StaticResource IconText}" Text="{x:Static ic:Icons.ArrowRepeat}"/><TextBlock Text="Reset values" Margin="6,0,0,0"/></StackPanel></Button>
+                            <StackPanel>
+                                <StackPanel x:Name="WaterLakeRows">
+                                    <DockPanel Style="{StaticResource FormRow}">
+                                        <TextBlock Style="{StaticResource FormLabel}" Text="Water level (m)"
+                                                   ToolTip="Height of the water surface above sea level. Generated worlds always use 30. The ground inside is dug below it; if the land around is lower, a bank is built"/>
+                                        <TextBox x:Name="WaterLevelBox" Style="{StaticResource FormField}" Text="30" LostFocus="WaterValue_Changed" KeyDown="WaterValue_KeyDown"/>
+                                        <Button Style="{StaticResource FormButton}" Content="From ground" Click="WaterFromGround_Click"
+                                                ToolTip="Take the water level from the drawn area: the lowest ground height along its outline, so that no bank has to be built"/>
+                                    </DockPanel>
+                                    <DockPanel Style="{StaticResource FormRow}">
+                                        <TextBlock Style="{StaticResource FormLabel}" Text="Depth (m)"
+                                                   ToolTip="How deep the ground is dug below the lowest point of the outline. Used by From ground: water level = lowest ground minus (depth minus water depth)"/>
+                                        <TextBox x:Name="WaterDepthBox" Style="{StaticResource FormField}" Text="6" LostFocus="WaterValue_Changed" KeyDown="WaterValue_KeyDown"/>
+                                    </DockPanel>
+                                    <DockPanel Style="{StaticResource FormRow}">
+                                        <TextBlock Style="{StaticResource FormLabel}" Text="Water depth (m)"
+                                                   ToolTip="Height of the water above the deepest point of the lake bed. Lakes of generated worlds are mostly 5 to 13 m deep"/>
+                                        <TextBox x:Name="WaterWDepthBox" Style="{StaticResource FormField}" Text="4" LostFocus="WaterValue_Changed" KeyDown="WaterValue_KeyDown"/>
+                                    </DockPanel>
+                                    <DockPanel x:Name="WaterWidthRow" Style="{StaticResource FormRow}" Visibility="Collapsed">
+                                        <TextBlock Style="{StaticResource FormLabel}" Text="River width (m)"
+                                                   ToolTip="Width of the river"/>
+                                        <TextBox x:Name="WaterWidthBox" Style="{StaticResource FormField}" Text="12" LostFocus="WaterValue_Changed" KeyDown="WaterValue_KeyDown"/>
+                                    </DockPanel>
+                                    <DockPanel x:Name="WaterIrregRow" Style="{StaticResource FormRow}" Visibility="Collapsed">
+                                        <TextBlock Style="{StaticResource FormLabel}" Text="Irregularity (%)"
+                                                   ToolTip="How much the bank points are moved sideways when the bank line is made, as a share of the width. 12 m wide and 10 % = at most 1.2 m"/>
+                                        <TextBox x:Name="WaterIrregBox" Style="{StaticResource FormField}" Text="10" LostFocus="WaterValue_Changed" KeyDown="WaterValue_KeyDown"/>
+                                    </DockPanel>
+                                    <DockPanel x:Name="WaterShoreRow" Style="{StaticResource FormRow}">
+                                        <TextBlock Style="{StaticResource FormLabel}" Text="Shore width (m)"
+                                                   ToolTip="How far from the edge the bottom falls to full depth. Small = steep shore, large = long flat shallows. Generated lakes: about 15 m"/>
+                                        <TextBox x:Name="WaterShoreBox" Style="{StaticResource FormField}" Text="14" LostFocus="WaterValue_Changed" KeyDown="WaterValue_KeyDown"/>
+                                    </DockPanel>
+                                </StackPanel>
+                                <StackPanel x:Name="WaterCraterRows" Visibility="Collapsed">
+                                    <DockPanel Style="{StaticResource FormRow}">
+                                        <TextBlock Style="{StaticResource FormLabel}" Text="Water height (m)"
+                                                   ToolTip="Height of the water above the ground you click. Everything connected that lies lower than that height is filled with water"/>
+                                        <TextBox x:Name="WaterCraterHeightBox" Style="{StaticResource FormField}" Text="6" LostFocus="WaterValue_Changed" KeyDown="WaterValue_KeyDown"/>
+                                    </DockPanel>
+                                    <TextBlock Style="{StaticResource FormNote}" Text="Click into a crater (or drag the brush through several). The water stands that high above the ground you click."/>
+                                </StackPanel>
+                                <DockPanel x:Name="WaterBiomeRow" Style="{StaticResource FormRow}">
+                                    <TextBlock Style="{StaticResource FormLabel}" Text="Biome under water"
+                                               ToolTip="Sets the biome of the map under the new water. The biome decides the ground layers (forest ground, sandstone, snow …) and the plants, so the ground under the water looks the same everywhere. Keep as is = the biome stays"/>
+                                    <ComboBox Style="{StaticResource FormCombo}" x:Name="WaterBiomeBox" SelectedIndex="0" SelectionChanged="WaterBiomeBox_SelectionChanged">
+                                        <ComboBoxItem Content="Keep as is"/>
+                                        <ComboBoxItem Content="Pine forest"/>
+                                        <ComboBoxItem Content="Burnt forest"/>
+                                        <ComboBoxItem Content="Desert"/>
+                                        <ComboBoxItem Content="Snow"/>
+                                        <ComboBoxItem Content="Wasteland"/>
+                                    </ComboBox>
+                                </DockPanel>
+                                <DockPanel x:Name="WaterBumpsRow" Style="{StaticResource FormRow}">
+                                    <TextBlock Style="{StaticResource FormLabel}" Text="Bumpiness"
+                                               ToolTip="Unevenness of the lake bed"/>
+                                    <ComboBox Style="{StaticResource FormCombo}" x:Name="WaterBumpsBox" SelectedIndex="1" SelectionChanged="WaterBumpsBox_SelectionChanged">
+                                        <ComboBoxItem Content="None"/>
+                                        <ComboBoxItem Content="Light"/>
+                                        <ComboBoxItem Content="Medium"/>
+                                        <ComboBoxItem Content="Strong"/>
+                                    </ComboBox>
+                                </DockPanel>
+                            </StackPanel>
+                        </DockPanel>
+                    </Border>
+                    <Border x:Name="GroupAsphalt" Style="{StaticResource PanelGroup}" Visibility="Collapsed">
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Top" Style="{StaticResource PanelGroupLabel}" Text="Asphalt"/><Button DockPanel.Dock="Bottom" HorizontalAlignment="Left" Margin="0,10,0,0" Style="{StaticResource FormButton}" Tag="asphalt" Click="ResetTool_Click" ToolTip="Load the values of this tool from default.ini (your changes in user.ini are removed)"><StackPanel Orientation="Horizontal"><TextBlock Style="{StaticResource IconText}" Text="{x:Static ic:Icons.ArrowRepeat}"/><TextBlock Text="Reset values" Margin="6,0,0,0"/></StackPanel></Button>
+                            <StackPanel>
+                                <DockPanel Style="{StaticResource FormRow}">
+                                    <TextBlock Style="{StaticResource FormLabel}" Text="Width of the area (m)"/>
+                                    <TextBox x:Name="AsphaltWidthBox" Style="{StaticResource FormField}" Text="16" LostFocus="ToolValue_Changed" KeyDown="ToolValue_KeyDown"/>
+                                </DockPanel>
+                                <DockPanel Style="{StaticResource FormRow}">
+                                    <TextBlock Style="{StaticResource FormLabel}" Text="Gravel shoulder (m)"/>
+                                    <TextBox x:Name="AsphaltShoulderBox" Style="{StaticResource FormField}" Text="1" LostFocus="ToolValue_Changed" KeyDown="ToolValue_KeyDown"/>
+                                </DockPanel>
+                                <DockPanel Style="{StaticResource FormRow}" ToolTip="Extra strip per side, levelled to the road height but without any surface. Useful for roads that climb a mountain or cut into the ground.">
+                                    <TextBlock Style="{StaticResource FormLabel}" Text="Grass edge (m)"/>
+                                    <TextBox x:Name="AsphaltGrassBox" Style="{StaticResource FormField}" Text="0" LostFocus="ToolValue_Changed" KeyDown="ToolValue_KeyDown"/>
+                                </DockPanel>
+                                <DockPanel Style="{StaticResource FormRow}">
+                                    <TextBlock Style="{StaticResource FormLabelWide}" Text="Maximum grade (%)"/>
+                                    <TextBox x:Name="AsphaltGradeBox" Style="{StaticResource FormField}" LostFocus="ToolValue_Changed" KeyDown="ToolValue_KeyDown"/>
+                                </DockPanel>
+                                <DockPanel Style="{StaticResource FormRow}">
+                                    <TextBlock Style="{StaticResource FormLabelWide}" Text="Smoothing of the course (m)"/>
+                                    <TextBox x:Name="AsphaltSmoothBox" Style="{StaticResource FormField}" LostFocus="ToolValue_Changed" KeyDown="ToolValue_KeyDown"/>
+                                </DockPanel>
+                                <DockPanel Style="{StaticResource FormRow}">
+                                    <TextBlock Style="{StaticResource FormLabelWide}" Text="Slope at least (m)"/>
+                                    <TextBox x:Name="AsphaltBlendBox" Style="{StaticResource FormField}" LostFocus="ToolValue_Changed" KeyDown="ToolValue_KeyDown"/>
+                                </DockPanel>
+                                <DockPanel Style="{StaticResource FormRow}">
+                                    <TextBlock Style="{StaticResource FormLabelWide}" Text="Slope per m of height (m, 0 = off)"/>
+                                    <TextBox x:Name="AsphaltCutBox" Style="{StaticResource FormField}" LostFocus="ToolValue_Changed" KeyDown="ToolValue_KeyDown"/>
+                                </DockPanel>
+                                <DockPanel Style="{StaticResource FormRow}">
+                                    <TextBlock Style="{StaticResource FormLabelWide}" Text="Junction flat up to (%)"
+                                               ToolTip="Up to this grade a junction counts as flat; steeper existing roads are adjusted to this value at the junction"/>
+                                    <TextBox x:Name="AsphaltTolBox" Style="{StaticResource FormField}" LostFocus="ToolValue_Changed" KeyDown="ToolValue_KeyDown"/>
+                                </DockPanel>
+                                <DockPanel Style="{StaticResource FormRow}">
+                                    <TextBlock Style="{StaticResource FormLabelWide}" Text="Cross slope up to (%)"
+                                               ToolTip="How far the new road may tilt sideways at junctions (0 = always level)"/>
+                                    <TextBox x:Name="AsphaltCrossBox" Style="{StaticResource FormField}" LostFocus="ToolValue_Changed" KeyDown="ToolValue_KeyDown"/>
+                                </DockPanel>
+                                <TextBlock Style="{StaticResource FormHint}" Text="Height offset, grade and junctions: in the window above the map."/>
+                            </StackPanel>
+                        </DockPanel>
+                    </Border>
+                    <Border x:Name="GroupGravel" Style="{StaticResource PanelGroup}" Visibility="Collapsed">
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Top" Style="{StaticResource PanelGroupLabel}" Text="Gravel"/><Button DockPanel.Dock="Bottom" HorizontalAlignment="Left" Margin="0,10,0,0" Style="{StaticResource FormButton}" Tag="gravel" Click="ResetTool_Click" ToolTip="Load the values of this tool from default.ini (your changes in user.ini are removed)"><StackPanel Orientation="Horizontal"><TextBlock Style="{StaticResource IconText}" Text="{x:Static ic:Icons.ArrowRepeat}"/><TextBlock Text="Reset values" Margin="6,0,0,0"/></StackPanel></Button>
+                            <StackPanel>
+                                <DockPanel Style="{StaticResource FormRow}">
+                                    <TextBlock Style="{StaticResource FormLabel}" Text="Width of the area (m)"/>
+                                    <TextBox x:Name="GravelWidthBox" Style="{StaticResource FormField}" Text="5" LostFocus="ToolValue_Changed" KeyDown="ToolValue_KeyDown"/>
+                                </DockPanel>
+                                <DockPanel Style="{StaticResource FormRow}" ToolTip="Extra strip per side, levelled to the road height but without any surface. Useful for roads that climb a mountain or cut into the ground.">
+                                    <TextBlock Style="{StaticResource FormLabel}" Text="Grass edge (m)"/>
+                                    <TextBox x:Name="GravelGrassBox" Style="{StaticResource FormField}" Text="0" LostFocus="ToolValue_Changed" KeyDown="ToolValue_KeyDown"/>
+                                </DockPanel>
+                                <DockPanel Style="{StaticResource FormRow}">
+                                    <TextBlock Style="{StaticResource FormLabelWide}" Text="Maximum grade (%)"/>
+                                    <TextBox x:Name="GravelGradeBox" Style="{StaticResource FormField}" LostFocus="ToolValue_Changed" KeyDown="ToolValue_KeyDown"/>
+                                </DockPanel>
+                                <DockPanel Style="{StaticResource FormRow}">
+                                    <TextBlock Style="{StaticResource FormLabelWide}" Text="Smoothing of the course (m)"/>
+                                    <TextBox x:Name="GravelSmoothBox" Style="{StaticResource FormField}" LostFocus="ToolValue_Changed" KeyDown="ToolValue_KeyDown"/>
+                                </DockPanel>
+                                <DockPanel Style="{StaticResource FormRow}">
+                                    <TextBlock Style="{StaticResource FormLabelWide}" Text="Slope at least (m)"/>
+                                    <TextBox x:Name="GravelBlendBox" Style="{StaticResource FormField}" LostFocus="ToolValue_Changed" KeyDown="ToolValue_KeyDown"/>
+                                </DockPanel>
+                                <DockPanel Style="{StaticResource FormRow}">
+                                    <TextBlock Style="{StaticResource FormLabelWide}" Text="Slope per m of height (m, 0 = off)"/>
+                                    <TextBox x:Name="GravelCutBox" Style="{StaticResource FormField}" LostFocus="ToolValue_Changed" KeyDown="ToolValue_KeyDown"/>
+                                </DockPanel>
+                                <DockPanel Style="{StaticResource FormRow}">
+                                    <TextBlock Style="{StaticResource FormLabelWide}" Text="Junction flat up to (%)"
+                                               ToolTip="Up to this grade a junction counts as flat; steeper existing roads are adjusted to this value at the junction"/>
+                                    <TextBox x:Name="GravelTolBox" Style="{StaticResource FormField}" LostFocus="ToolValue_Changed" KeyDown="ToolValue_KeyDown"/>
+                                </DockPanel>
+                                <DockPanel Style="{StaticResource FormRow}">
+                                    <TextBlock Style="{StaticResource FormLabelWide}" Text="Cross slope up to (%)"
+                                               ToolTip="How far the new road may tilt sideways at junctions (0 = always level)"/>
+                                    <TextBox x:Name="GravelCrossBox" Style="{StaticResource FormField}" LostFocus="ToolValue_Changed" KeyDown="ToolValue_KeyDown"/>
+                                </DockPanel>
+                                <TextBlock Style="{StaticResource FormHint}" Text="Height offset, grade and junctions: in the window above the map."/>
+                            </StackPanel>
+                        </DockPanel>
+                    </Border>
+                    <Border x:Name="GroupRoadEdit" Style="{StaticResource PanelGroup}" Visibility="Collapsed">
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Top" Style="{StaticResource PanelGroupLabel}" Text="Edit road"/><Button DockPanel.Dock="Bottom" HorizontalAlignment="Left" Margin="0,10,0,0" Style="{StaticResource FormButton}" Tag="roadedit" Click="ResetTool_Click" ToolTip="Load the values of this tool from default.ini (your changes in user.ini are removed)"><StackPanel Orientation="Horizontal"><TextBlock Style="{StaticResource IconText}" Text="{x:Static ic:Icons.ArrowRepeat}"/><TextBlock Text="Reset values" Margin="6,0,0,0"/></StackPanel></Button>
+                            <TextBlock Style="{StaticResource FormText}"
+                                       Text="Click onto an existing road: the marker snaps to the middle of the road. With two or more markers you can change the height, the grade and the banking in the window above the map."/>
+                        </DockPanel>
+                    </Border>
+                    <Border x:Name="GroupEraser" Style="{StaticResource PanelGroup}" Visibility="Collapsed">
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Top" Style="{StaticResource PanelGroupLabel}" Text="Eraser"/><Button DockPanel.Dock="Bottom" HorizontalAlignment="Left" Margin="0,10,0,0" Style="{StaticResource FormButton}" Tag="eraser" Click="ResetTool_Click" ToolTip="Load the values of this tool from default.ini (your changes in user.ini are removed)"><StackPanel Orientation="Horizontal"><TextBlock Style="{StaticResource IconText}" Text="{x:Static ic:Icons.ArrowRepeat}"/><TextBlock Text="Reset values" Margin="6,0,0,0"/></StackPanel></Button>
+                            <StackPanel>
+                                <StackPanel>
+                                    <DockPanel Style="{StaticResource FormRow}">
+                                        <TextBlock Style="{StaticResource FormLabel}" Text="Brush shape"/>
+                                        <RadioButton Style="{StaticResource FormRadio}" x:Name="BrushRoundRadio" Content="Round" IsChecked="True" Click="BrushShape_Click"/>
+                                        <RadioButton Style="{StaticResource FormRadio}" x:Name="BrushSquareRadio" Content="Square" Click="BrushShape_Click"/>
+                                    </DockPanel>
+                                    <DockPanel Style="{StaticResource FormRow}">
+                                        <TextBlock Style="{StaticResource FormLabel}" Text="Brush size (m)"/>
+                                        <TextBox x:Name="BrushSizeBox" Style="{StaticResource FormField}" Text="32" LostFocus="BrushSize_Changed" KeyDown="BrushSize_KeyDown"/>
+                                    </DockPanel>
+                                    <DockPanel Style="{StaticResource FormRow}">
+                                        <TextBlock Style="{StaticResource FormLabel}" Text="Bumpiness"/>
+                                        <ComboBox Style="{StaticResource FormCombo}" x:Name="BumpsBox" SelectedIndex="2" SelectionChanged="BumpsBox_SelectionChanged"
+                                                  ToolTip="How bumpy the erased ground becomes. The ground is always blended into the terrain next to it; &quot;None&quot; = smooth">
+                                            <ComboBoxItem Content="None"/>
+                                            <ComboBoxItem Content="Light"/>
+                                            <ComboBoxItem Content="Medium"/>
+                                            <ComboBoxItem Content="Strong"/>
+                                        </ComboBox>
+                                    </DockPanel>
+                                </StackPanel>
+                            </StackPanel>
+                        </DockPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+            <!-- Breite am rechten Rand ziehbar -->
+            <Thumb HorizontalAlignment="Right" Width="6" Cursor="SizeWE" DragDelta="LeftPanelThumb_DragDelta" DragCompleted="LeftPanelThumb_DragCompleted"
+                   ToolTip="Drag to change the width">
+                <Thumb.Template>
+                    <ControlTemplate TargetType="Thumb"><Border Background="Transparent"/></ControlTemplate>
+                </Thumb.Template>
+            </Thumb>
+            <!-- Zustand der Werkzeuge: dieselben Knöpfe wie früher links, jetzt unsichtbar. Das Menüband schaltet sie (RibbonTool_Click), der Code liest sie. -->
+            <StackPanel Visibility="Collapsed">
+                <ToggleButton x:Name="TerrainTool" Click="TerrainTool_Click"/>
+                <ToggleButton x:Name="MtnMountainButton" Tag="0" Click="MountainKind_Click"/>
+                <ToggleButton x:Name="MtnPlateauButton" Tag="1" Click="MountainKind_Click"/>
+                <ToggleButton x:Name="MtnHillButton" Tag="2" Click="MountainKind_Click"/>
+                <ToggleButton x:Name="MtnDomeButton" Tag="3" Click="MountainKind_Click"/>
+                <ToggleButton x:Name="BiomeTool" Click="BiomeTool_Click"/>
+                <ToggleButton x:Name="RngMountainButton" Tag="0" Click="RangeKind_Click"/>
+                <ToggleButton x:Name="RngHillsButton" Tag="1" Click="RangeKind_Click"/>
+                <ToggleButton x:Name="RngHighlandButton" Tag="2" Click="RangeKind_Click"/>
+                <ToggleButton x:Name="AsphaltTool" Click="AsphaltTool_Click"/>
+                <ToggleButton x:Name="GravelTool" Click="GravelTool_Click"/>
+                <ToggleButton x:Name="RoadEditTool" Click="RoadEditTool_Click"/>
+                <ToggleButton x:Name="EraserTool" Click="EraserTool_Click"/>
+                <ToggleButton x:Name="MountainTool" Click="MountainTool_Click"/>
+                <ToggleButton x:Name="RangeTool" Click="RangeTool_Click"/>
+                <ToggleButton x:Name="WaterTool" Click="WaterTool_Click"/>
+                <ToggleButton x:Name="WaterLakeButton" Tag="0" Click="WaterKind_Click"/>
+                <ToggleButton x:Name="WaterDryButton" Tag="1" Click="WaterKind_Click"/>
+                <ToggleButton x:Name="WaterRiverButton" Tag="2" Click="WaterKind_Click"/>
+                <ToggleButton x:Name="WaterCraterButton" Tag="3" Click="WaterKind_Click"/>
+            </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Rechte Seite: Gebäudeliste mit Gruppen (Klick öffnet das Fenster „Gebäude“); Breite am linken Rand ziehbar -->
+        <Border x:Name="RightPanel" DockPanel.Dock="Right" Width="380" Background="{DynamicResource SidebarBrush}" BorderBrush="{DynamicResource LineBrush}" BorderThickness="1,0,0,0">
+            <Grid>
+            <DockPanel x:Name="RightPanelFull">
+            <Thumb DockPanel.Dock="Left" Width="6" Cursor="SizeWE" DragDelta="RightPanelThumb_DragDelta" DragCompleted="RightPanelThumb_DragCompleted"
+                   ToolTip="Drag to change the width">
+                <Thumb.Template>
+                    <ControlTemplate TargetType="Thumb"><Border Background="Transparent"/></ControlTemplate>
+                </Thumb.Template>
+            </Thumb>
+            <DockPanel Margin="4,10,10,10" Grid.IsSharedSizeScope="True">
+                <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+                    <Button DockPanel.Dock="Right" Padding="7,2" Click="RightPanelToggle_Click" ToolTip="Fold the list away to the right">
+                        <TextBlock Style="{StaticResource IconText}" Text="{x:Static ic:Icons.ChevronDoubleRight}"/>
+                    </Button>
+                    <TextBlock Style="{StaticResource SectionTitle}" Margin="0" VerticalAlignment="Center" Text="BUILDINGS"/>
+                </DockPanel>
+                <WrapPanel x:Name="CategoryBar" DockPanel.Dock="Top" Margin="0,0,0,4"/>
+                <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+                    <CheckBox x:Name="AllPrefabsCheck" DockPanel.Dock="Right" VerticalAlignment="Center" Margin="10,0,0,0" Content="all from the game" Click="AllPrefabsCheck_Click"
+                              ToolTip="Off: only buildings on this map. On: all buildings from the game and the mods"/>
+                    <TextBox x:Name="PrefabSearch" Padding="4,2" TextChanged="PrefabSearch_TextChanged" ToolTip="Search by name"/>
+                </DockPanel>
+                <!-- Filter nach Biom: zeigt, was das Spiel in diesem Biom baut (Wunsch des Nutzers 5.11.2026) -->
+                <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+                    <TextBlock DockPanel.Dock="Left" Text="Biome:" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="{DynamicResource SubtleTextBrush}"/>
+                    <ComboBox x:Name="BiomeFilterBox" SelectionChanged="BiomeFilter_Changed" ToolTip="Show only what the game builds in this biome (buildings without a district are hidden then)"/>
+                </DockPanel>
+
+
+                <TextBlock x:Name="PrefabCountText" DockPanel.Dock="Top" FontSize="12" Foreground="{DynamicResource SubtleTextBrush}" Margin="0,0,0,4" Text=""/>
+                <!-- Spaltenköpfe zum Sortieren (Wunsch des Nutzers 31.10.2026), gleiche Spalten wie die Einträge -->
+                <Grid DockPanel.Dock="Top" Margin="6,0,24,2" TextElement.FontSize="12" TextElement.FontWeight="SemiBold" TextElement.Foreground="{DynamicResource SubtleTextBrush}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="54"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="46"/>
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="PrefabExits"/>
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="PrefabCount"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock x:Name="SortTierHead" Tag="tier" Cursor="Hand" Background="Transparent" MouseLeftButtonUp="SortHead_Click" ToolTip="Click to sort, click again to reverse"/>
+                    <TextBlock x:Name="SortNameHead" Grid.Column="1" Tag="name" Cursor="Hand" Background="Transparent" MouseLeftButtonUp="SortHead_Click" ToolTip="Click to sort, click again to reverse"/>
+                    <TextBlock Grid.Column="2" Text="Biome" ToolTip="Biomes in which the game builds it (F pine forest, B burnt forest, D desert, S snow, W wasteland, * all)"/>
+                    <TextBlock x:Name="SortCountHead" Grid.Column="4" HorizontalAlignment="Right" Tag="count" Cursor="Hand" Background="Transparent" MouseLeftButtonUp="SortHead_Click" ToolTip="Click to sort, click again to reverse"/>
+                </Grid>
+                <ListBox x:Name="PrefabList" HorizontalContentAlignment="Stretch" BorderBrush="{DynamicResource SoftLineBrush}"
+                         VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled" SelectionChanged="PrefabList_SelectionChanged">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <!-- Stufe vorne in eigener Spalte (Wunsch des Nutzers: lange Namen verdecken sie nicht mehr) -->
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="54"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="46"/>
+                                    <ColumnDefinition Width="Auto" SharedSizeGroup="PrefabExits"/>
+                                    <ColumnDefinition Width="Auto" SharedSizeGroup="PrefabCount"/>
+                                </Grid.ColumnDefinitions>
+                                <!-- Stufe als Sterne (Wunsch des Nutzers 31.10.2026), ohne Stufe leer -->
+                                <TextBlock Text="{Binding TierText}" Foreground="#D99A00" FontFamily="Segoe UI Symbol" FontSize="11" VerticalAlignment="Center" ToolTip="{Binding TierToolTip}"/>
+                                <TextBlock Grid.Column="1" Style="{StaticResource IconText}" Text="{Binding Icon}" MinWidth="16" Margin="0,0,6,0"/>
+                                <TextBlock Grid.Column="2" Text="{Binding Display}" TextTrimming="CharacterEllipsis" ToolTip="{Binding Name}"/>
+                                <TextBlock Grid.Column="3" Text="{Binding BiomeText}" ToolTip="{Binding BiomeToolTip}" Foreground="#3E9A5A" FontSize="11" FontWeight="SemiBold" Margin="4,0,0,0" VerticalAlignment="Center"/>
+                                <TextBlock Grid.Column="4" Text="{Binding ExitsText}" ToolTip="{Binding ExitsToolTip}" Foreground="#2F6FB5" FontSize="11" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                                <TextBlock Grid.Column="5" Text="{Binding CountText}" Foreground="{DynamicResource SubtleTextBrush}" Margin="8,0,0,0" MinWidth="24" TextAlignment="Right"/>
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </DockPanel>
+            </DockPanel>
+            <!-- eingeklappt: schmaler Streifen mit Knopf zum Aufklappen -->
+            <Button x:Name="RightPanelStrip" Visibility="Collapsed" Margin="3" Padding="0,10" Click="RightPanelToggle_Click" ToolTip="Show the building list">
+                <StackPanel>
+                    <TextBlock Style="{StaticResource IconText}" HorizontalAlignment="Center" Text="{x:Static ic:Icons.ChevronDoubleLeft}"/>
+                    <TextBlock Margin="0,10,0,0" HorizontalAlignment="Center" FontWeight="SemiBold" FontSize="11" Text="BUILDINGS">
+                        <TextBlock.LayoutTransform><RotateTransform Angle="90"/></TextBlock.LayoutTransform>
+                    </TextBlock>
+                </StackPanel>
+            </Button>
+            </Grid>
+        </Border>
+
+        <!-- Höhenprofil: nur sichtbar, solange eine Straße mit Profil berechnet ist (ShowProfile) -->
+        <Border x:Name="ProfilePanel" DockPanel.Dock="Bottom" Height="190" Visibility="Collapsed" BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,1,0,0">
+            <c:ProfileChart x:Name="Profile"/>
+        </Border>
+
+        <DockPanel>
+            <!-- Lineale (Ansicht → Lineale): Meter vom Kartenmittelpunkt, Osten nach rechts, Norden nach oben -->
+            <Grid x:Name="RulerTopRow" DockPanel.Dock="Top" Height="22" Visibility="Collapsed">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="22"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                <Border Background="{DynamicResource PanelBrush}" BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,0,1,1"/>
+                <c:MapRuler x:Name="RulerTop" Grid.Column="1"/>
+            </Grid>
+            <c:MapRuler x:Name="RulerLeft" DockPanel.Dock="Left" Width="22" Vertical="True" Visibility="Collapsed"/>
+        <Grid>
+            <c:MapView x:Name="Map"/>
+            <!-- Legende der Biomfarben (nur sichtbar mit Häkchen „Biomes“) -->
+            <Border x:Name="BiomeLegend" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="12" Padding="10,8" IsHitTestVisible="False"
+                    Background="{DynamicResource LegendBrush}" BorderBrush="{DynamicResource ControlBorderBrush}" BorderThickness="1" CornerRadius="8">
+                <StackPanel>
+                    <TextBlock Text="Biomes" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                    <StackPanel x:Name="BiomeLegendList"/>
+                </StackPanel>
+            </Border>
+            <!-- Modul beim Bearbeiten: Abbrechen (Esc) oder Übernehmen -->
+            <Grid x:Name="ToolModule" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="16" MaxWidth="620" UseLayoutRounding="True" SnapsToDevicePixels="True"
+                  MouseLeftButtonDown="ToolModule_MouseDown" MouseMove="ToolModule_MouseMove" MouseLeftButtonUp="ToolModule_MouseUp">
+                <Grid.RenderTransform>
+                    <TranslateTransform x:Name="ToolModuleShift"/>
+                </Grid.RenderTransform>
+                <!-- Schatten: eigene Fläche ohne Text -->
+                <Border Background="{DynamicResource CardBrush}" CornerRadius="8" IsHitTestVisible="False">
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="16" ShadowDepth="3" Opacity="0.25"/>
+                    </Border.Effect>
+                </Border>
+                <Border Background="{DynamicResource CardBrush}" BorderBrush="{DynamicResource ControlBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14,10">
+                <StackPanel>
+                <DockPanel>
+                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center" Margin="14,0,0,0">
+                        <Button x:Name="ToolCancelButton" Content="Cancel (Esc)" Padding="14,5" Margin="0,0,8,0" Click="ToolCancel_Click"/>
+                        <Button x:Name="ToolApplyButton" Content="Apply" Padding="14,5" FontWeight="SemiBold" Click="ToolApply_Click"/>
+                    </StackPanel>
+                    <TextBlock DockPanel.Dock="Left" Style="{StaticResource IconText}" Text="{x:Static ic:Icons.GripVertical}" FontSize="18" Foreground="{DynamicResource DisabledTextBrush}" Margin="0,0,10,0" VerticalAlignment="Center" Cursor="SizeAll"
+                               ToolTip="Move the box: grab here or at an empty spot and drag"/>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock x:Name="ToolTitle" FontWeight="SemiBold" FontSize="14" Text=""/>
+                        <TextBlock x:Name="ToolHint" TextWrapping="Wrap" Foreground="{DynamicResource SubtleTextBrush}" FontSize="12" Text=""/>
+                    </StackPanel>
+                </DockPanel>
+                <Border x:Name="ToolWarnBox" Visibility="Collapsed" Margin="0,8,0,0" Padding="8,6" Background="{DynamicResource NoteBrush}" BorderBrush="{DynamicResource NoteBorderBrush}" BorderThickness="1" CornerRadius="4">
+                    <TextBlock x:Name="ToolWarnText" TextWrapping="Wrap" FontSize="12" Foreground="{DynamicResource TextBrush}"/>
+                </Border>
+                <!-- Höhe der Straße: Versatz für die ganze Straße, Höhe des gewählten Punkts -->
+                <Border x:Name="RoadHeightPanel" Margin="0,10,0,0" Padding="0,8,0,0" BorderBrush="{DynamicResource SoftLineBrush}" BorderThickness="0,1,0,0">
+                    <StackPanel>
+                        <DockPanel Style="{StaticResource FormRowFill}">
+                            <TextBlock Style="{StaticResource FormLabelWide}" Text="Height offset"/>
+                            <TextBox x:Name="OffsetBox" Style="{StaticResource FormField}" Text="0" LostFocus="OffsetBox_Changed" KeyDown="OffsetBox_KeyDown" ToolTip="e.g. 2 or -2 (up to ±20 m)"/>
+                            <TextBlock Style="{StaticResource FormUnit}" Text="m"/>
+                            <Slider x:Name="OffsetSlider" Style="{StaticResource FormSlider}" Minimum="-10" Maximum="10" TickFrequency="0.5" IsSnapToTickEnabled="True" ValueChanged="OffsetSlider_ValueChanged" ToolTip="Whole road higher (+) or lower (−) than the terrain; connections to tiles and buildings stay"/>
+                        </DockPanel>
+                        <DockPanel Style="{StaticResource FormRow}" ToolTip="Automatic (auto): 4 m level at city tiles and building driveways, otherwise none. Or enter metres: so many metres at the start and end the road stays level">
+                            <TextBlock Style="{StaticResource FormLabelWide}" Text="Keep level at start"/>
+                            <TextBox x:Name="FlatStartBox" Style="{StaticResource FormField}" Text="auto" LostFocus="FlatBox_Changed" KeyDown="FlatBox_KeyDown"/>
+                            <TextBlock Style="{StaticResource FormUnit}" Text="m"/>
+                        </DockPanel>
+                        <DockPanel Style="{StaticResource FormRow}" ToolTip="Automatic (auto): 4 m level at city tiles and building driveways, otherwise none. Or enter metres: so many metres at the start and end the road stays level">
+                            <TextBlock Style="{StaticResource FormLabelWide}" Text="Keep level at end"/>
+                            <TextBox x:Name="FlatEndBox" Style="{StaticResource FormField}" Text="auto" LostFocus="FlatBox_Changed" KeyDown="FlatBox_KeyDown"/>
+                            <TextBlock Style="{StaticResource FormUnit}" Text="m"/>
+                        </DockPanel>
+                        <DockPanel x:Name="PointHeightRow" Style="{StaticResource FormRowFill}">
+                            <TextBlock x:Name="PointLabel" Style="{StaticResource FormLabelWide}" Text="Point"/>
+                            <TextBox x:Name="PointHeightBox" Style="{StaticResource FormField}" LostFocus="PointHeight_Changed" KeyDown="PointHeight_KeyDown" ToolTip="Height of the road at this point (Enter = apply)"/>
+                            <TextBlock Style="{StaticResource FormUnit}" Text="m"/>
+                            <Button Style="{StaticResource FormButton}" Content="automatic" Click="PointAuto_Click" ToolTip="Calculate the height of this point from the terrain again"/>
+                            <TextBlock x:Name="PointInfo" Style="{StaticResource FormInfo}" Text=""/>
+                        </DockPanel>
+                        <DockPanel x:Name="PointWidthRow" Style="{StaticResource FormRowFill}" Visibility="Collapsed">
+                            <TextBlock x:Name="PointWidthLabel" Style="{StaticResource FormLabelWide}" Text="Road width here"/>
+                            <TextBox x:Name="PointWidthBox" Style="{StaticResource FormField}" LostFocus="PointWidth_Changed" KeyDown="PointWidth_KeyDown" ToolTip="Width of the road at this point (Enter = apply). Between two points with different widths the road narrows or widens smoothly."/>
+                            <TextBlock Style="{StaticResource FormUnit}" Text="m"/>
+                            <Button Style="{StaticResource FormButton}" Content="automatic" Click="PointWidthAuto_Click" ToolTip="Use the standard width (or the width of the connection) at this point again"/>
+                            <TextBlock x:Name="PointWidthInfo" Style="{StaticResource FormInfo}" Text=""/>
+                        </DockPanel>
+                        <DockPanel Style="{StaticResource FormRow}">
+                            <CheckBox x:Name="UniformGradeCheck" Style="{StaticResource FormCheck}" Click="UniformGrade_Click" Content="Even grade (start to end, independent of the terrain)" ToolTip="The road rises or falls evenly from start to end (along the route, also through curves) instead of following the terrain. Fixed points (connections, junctions, heights set by hand) split it into sections with an even grade each."/>
+                        </DockPanel>
+                        <TextBlock x:Name="PointTip" Style="{StaticResource FormNote}" Text="Tip: click a point (don't drag) to set its height by hand."/>
+                        <DockPanel Style="{StaticResource FormRow}">
+                            <CheckBox x:Name="AdjustJunctionsCheck" Style="{StaticResource FormCheck}" IsChecked="True" Click="AdjustJunctions_Click" Content="Make junctions with existing roads flat (the existing road is adjusted)" ToolTip="If the road starts or ends on an existing road, the junction becomes almost flat (at most 2 %); if the existing road is steeper there, it is adjusted for about 70 m to each side (purple)"/>
+                        </DockPanel>
+                        <TextBlock x:Name="JunctionText" Style="{StaticResource FormNote}" Foreground="{DynamicResource PurpleTextBrush}" Visibility="Collapsed"/>
+                    </StackPanel>
+                </Border>
+                <!-- Vorhandene Straße bearbeiten: Höhe der gewählten Markierung, Neigung bis zu ihr, Kreuzungen -->
+                <Border x:Name="RoadEditPanel" Visibility="Collapsed" Margin="0,10,0,0" Padding="0,8,0,0" BorderBrush="{DynamicResource SoftLineBrush}" BorderThickness="0,1,0,0">
+                    <StackPanel>
+                        <DockPanel x:Name="EditHeightRow" Style="{StaticResource FormRowFill}">
+                            <TextBlock x:Name="EditMarkerLabel" Style="{StaticResource FormLabelWide}" Text="Marker"/>
+                            <TextBox x:Name="EditHeightBox" Style="{StaticResource FormField}" LostFocus="EditHeight_Changed" KeyDown="EditHeight_KeyDown" ToolTip="New height of the road at this marker (Enter = apply)"/>
+                            <TextBlock Style="{StaticResource FormUnit}" Text="m"/>
+                            <Button Style="{StaticResource FormButton}" Content="unchanged" Click="EditMarkerReset_Click" ToolTip="Leave the height of this marker as it is now"/>
+                            <TextBlock x:Name="EditMarkerInfo" Style="{StaticResource FormInfo}" Text=""/>
+                        </DockPanel>
+                        <DockPanel x:Name="EditGradeRow" Style="{StaticResource FormRowFill}">
+                            <TextBlock x:Name="EditGradeLabel" Style="{StaticResource FormLabelWide}" Text="Grade"/>
+                            <TextBox x:Name="EditGradeBox" Style="{StaticResource FormField}" LostFocus="EditGrade_Changed" KeyDown="EditGrade_KeyDown" ToolTip="Grade of the road between the neighbouring marker and this one (+ = rises along the order of the markers). Enter = the height of the later marker is calculated from it."/>
+                            <TextBlock Style="{StaticResource FormUnit}" Text="%"/>
+                            <TextBlock x:Name="EditGradeInfo" Style="{StaticResource FormInfo}" Text=""/>
+                        </DockPanel>
+                        <DockPanel x:Name="EditCrossRow" Style="{StaticResource FormRowFill}">
+                            <TextBlock Style="{StaticResource FormLabelWide}" Text="Cross slope (banking)"/>
+                            <TextBox x:Name="EditCrossBox" Style="{StaticResource FormField}" LostFocus="EditCross_Changed" KeyDown="EditCross_KeyDown" ToolTip="Slope from one side of the road to the other, like the banking of a race track. + = the left side is higher (looking along the order of the markers), − = the right side is higher. Between the markers it changes smoothly; at junctions the road is flat again. Enter = apply."/>
+                            <TextBlock Style="{StaticResource FormUnit}" Text="%"/>
+                            <Button Style="{StaticResource FormButton}" Content="unchanged" Click="EditCrossReset_Click" ToolTip="Leave the cross slope of this marker as it is now"/>
+                            <TextBlock x:Name="EditCrossInfo" Style="{StaticResource FormInfo}" Text=""/>
+                        </DockPanel>
+                        <DockPanel Style="{StaticResource FormRow}">
+                            <CheckBox x:Name="EditAutoCrossCheck" Style="{StaticResource FormCheck}" Click="EditOptions_Click" Content="Automatic banking in curves" ToolTip="Only two markers are needed: the banking of the whole stretch is calculated from the curves of the road. In a curve the road tilts towards the inside (inside lower, outside higher), the tighter the curve the more; straights stay flat, at junctions the road is flat again. A banking typed in at a marker wins over the automatic one."/>
+                            <TextBlock Style="{StaticResource FormUnit}" Margin="14,0,0,0" Text="up to"/>
+                            <TextBox x:Name="EditAutoCrossBox" Style="{StaticResource FormField}" Margin="6,0,0,0" Text="8" IsEnabled="False" LostFocus="EditOptions_Click" KeyDown="EditAutoMax_KeyDown" ToolTip="Highest banking in tight curves (Enter = apply)"/>
+                            <TextBlock Style="{StaticResource FormUnit}" Text="%"/>
+                        </DockPanel>
+                        <DockPanel Style="{StaticResource FormRow}">
+                            <RadioButton x:Name="EditEvenRadio" Style="{StaticResource FormRadio}" GroupName="EditShape" IsChecked="True" Click="EditOptions_Click" Content="Even grade" ToolTip="The road between the markers gets an even slope; hills in between disappear"/>
+                            <RadioButton x:Name="EditShapeRadio" Style="{StaticResource FormRadio}" GroupName="EditShape" Click="EditOptions_Click" Content="Keep the shape" ToolTip="The road keeps its ups and downs and is only moved higher or lower"/>
+                        </DockPanel>
+                        <DockPanel Style="{StaticResource FormRow}">
+                            <CheckBox x:Name="EditKeepJunctionsCheck" Style="{StaticResource FormCheck}" Click="EditOptions_Click" Content="Keep all junctions at their old height (crossing roads stay untouched)" ToolTip="Off: crossing roads follow the change as far as they can without becoming steep (green rings); where they cannot, the junction stays at its old height by itself (orange rings). On: all junctions stay at their old height, crossing roads are not touched."/>
+                        </DockPanel>
+                        <TextBlock x:Name="EditInfo" Style="{StaticResource FormNote}" Foreground="{DynamicResource PurpleTextBrush}"/>
+                        <TextBlock x:Name="EditWarn" Style="{StaticResource FormNote}" Foreground="{DynamicResource OrangeTextBrush}"/>
+                    </StackPanel>
+                </Border>
+                </StackPanel>
+                </Border>
+            </Grid>
+            <Border x:Name="Overlay" Background="{DynamicResource OverlayBrush}">
+                <TextBlock x:Name="LoadingText" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="16" TextWrapping="Wrap" MaxWidth="600" TextAlignment="Center" Text="Loading world …"/>
+            </Border>
+        </Grid>
+        </DockPanel>
+    </DockPanel>
+</Window>

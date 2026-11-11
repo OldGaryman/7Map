@@ -1,0 +1,85 @@
+<Window x:Class="MapEditor.WildernessWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ic="clr-namespace:MapEditor"
+        Title="Generate wilderness POIs" Width="520" Height="640" MinHeight="420" ResizeMode="CanResizeWithGrip" WindowStartupLocation="Manual"
+        FontFamily="Segoe UI" FontSize="13" Background="{DynamicResource WindowBrush}" Foreground="{DynamicResource TextBrush}" ShowInTaskbar="False">
+    <!-- Wildnis-POIs erzeugen (Wunsch des Nutzers 9.11.2026): planen und in der Karte zeigen, dann bauen.
+         Nicht modal, damit man die Vorschau ansehen und neu planen kann (wie „Straßen erzeugen“). -->
+    <DockPanel Margin="20,18,20,16">
+        <DockPanel DockPanel.Dock="Bottom" Margin="0,12,0,0">
+            <TextBlock x:Name="ErrorText" Foreground="{DynamicResource ErrorBrush}" TextWrapping="Wrap" VerticalAlignment="Center" MaxWidth="250"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Style="{StaticResource DialogButton}" Content="Close" IsCancel="True" Click="Close_Click"/>
+                <Button x:Name="PlanButton" Style="{StaticResource DialogButton}" IsDefault="True" Click="Plan_Click">
+                    <StackPanel Orientation="Horizontal"><TextBlock Style="{StaticResource IconText}" Text="{x:Static ic:Icons.Map}"/><TextBlock Text="Plan" Margin="6,0,0,0"/></StackPanel>
+                </Button>
+                <Button x:Name="BuildButton" Style="{StaticResource DialogButton}" FontWeight="SemiBold" IsEnabled="False" Click="Build_Click"
+                        ToolTip="Place the planned buildings and build their gravel paths (one editing step, undo with Ctrl+Z)">
+                    <StackPanel Orientation="Horizontal"><TextBlock Style="{StaticResource IconText}" Text="{x:Static ic:Icons.Hammer}"/><TextBlock Text="Build POIs" Margin="6,0,0,0"/></StackPanel>
+                </Button>
+            </StackPanel>
+        </DockPanel>
+
+        <StackPanel DockPanel.Dock="Top">
+            <TextBlock Style="{StaticResource FormTitle}" Text="Buildings in the wilderness"/>
+            <Border Style="{StaticResource FormBox}" Margin="0">
+                <StackPanel>
+                    <DockPanel Style="{StaticResource FormRow}">
+                        <TextBlock Style="{StaticResource FormLabelWide}" Text="Amount"/>
+                        <ComboBox x:Name="AmountBox" Style="{StaticResource FormCombo}" SelectionChanged="Selection_Changed"
+                                  ToolTip="Normal = like a world of the game (about 7 per km² of land)">
+                            <ComboBoxItem Content="Few"/>
+                            <ComboBoxItem Content="Normal"/>
+                            <ComboBoxItem Content="Many"/>
+                        </ComboBox>
+                    </DockPanel>
+                    <DockPanel Style="{StaticResource FormRow}">
+                        <TextBlock Style="{StaticResource FormLabelWide}" Text="Gravel path width"/>
+                        <TextBox x:Name="WidthMinBox" Style="{StaticResource FormField}" TextChanged="Text_Changed"
+                                 ToolTip="Small buildings get the narrow path, large ones (from 50 m) the wide one – never wider than their driveway"/>
+                        <TextBlock Style="{StaticResource FormUnit}" Text="–"/>
+                        <TextBox x:Name="WidthBox" Style="{StaticResource FormField}" TextChanged="Text_Changed"/>
+                        <TextBlock Style="{StaticResource FormUnit}" Text="m"/>
+                    </DockPanel>
+                    <DockPanel Style="{StaticResource FormRow}">
+                        <TextBlock Style="{StaticResource FormLabelWide}" Text="Verge each side"/>
+                        <TextBox x:Name="VergeBox" Style="{StaticResource FormField}" TextChanged="Text_Changed"
+                                 ToolTip="Level ground of the biome beside the gravel, so the gravel does not end right at the edge of a slope"/>
+                        <TextBlock Style="{StaticResource FormUnit}" Text="m"/>
+                    </DockPanel>
+                    <DockPanel Style="{StaticResource FormRow}">
+                        <TextBlock Style="{StaticResource FormLabelWide}" Text="Usual gradient, up to"/>
+                        <TextBox x:Name="GradeBox" Style="{StaticResource FormField}" TextChanged="Text_Changed"/>
+                        <TextBlock Style="{StaticResource FormUnit}" Text="%"/>
+                    </DockPanel>
+                    <DockPanel Style="{StaticResource FormRow}">
+                        <TextBlock Style="{StaticResource FormLabelWide}" Text="In tight passages, up to"/>
+                        <TextBox x:Name="MaxGradeBox" Style="{StaticResource FormField}" TextChanged="Text_Changed"/>
+                        <TextBlock Style="{StaticResource FormUnit}" Text="%"/>
+                    </DockPanel>
+                    <DockPanel Style="{StaticResource FormRow}">
+                        <TextBlock Style="{StaticResource FormLabelWide}" Text="Longest path"/>
+                        <TextBox x:Name="MaxPathBox" Style="{StaticResource FormField}" TextChanged="Text_Changed"/>
+                        <TextBlock Style="{StaticResource FormUnit}" Text="m"/>
+                    </DockPanel>
+                    <DockPanel Style="{StaticResource FormRow}">
+                        <TextBlock Style="{StaticResource FormLabelWide}" Text="Seed"/>
+                        <TextBox x:Name="SeedBox" Width="150" Height="{StaticResource FormControlHeight}" VerticalContentAlignment="Center" Padding="3,0" DockPanel.Dock="Left" TextChanged="Text_Changed"/>
+                        <Button Style="{StaticResource FormButton}" Click="RandomSeed_Click" ToolTip="New random seed – same seed on the same map = same buildings">
+                            <StackPanel Orientation="Horizontal"><TextBlock Style="{StaticResource IconText}" Text="{x:Static ic:Icons.Dice5}"/><TextBlock Text="Random" Margin="6,0,0,0"/></StackPanel>
+                        </Button>
+                    </DockPanel>
+                </StackPanel>
+            </Border>
+            <TextBlock Style="{StaticResource FormNote}" Text="Buildings with the tag &quot;wilderness&quot; from the game and the mods, chosen like the game does (biome rules, higher tiers a little more often, repeats kept apart). Buildings with a driveway only stand where a gravel path to the nearest road or another new path is possible. &quot;Plan&quot; only shows them on the map; &quot;Build POIs&quot; then builds them into the map (undo with Ctrl+Z)."/>
+            <TextBlock Style="{StaticResource FormTitle}" Margin="0,14,0,6" Text="Result"/>
+        </StackPanel>
+
+        <Border Style="{StaticResource FormBox}" Margin="0">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <TextBlock x:Name="ResultText" TextWrapping="Wrap" Margin="2" Text="Not planned yet."/>
+            </ScrollViewer>
+        </Border>
+    </DockPanel>
+</Window>
