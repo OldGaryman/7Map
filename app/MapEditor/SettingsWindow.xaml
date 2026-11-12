@@ -1,0 +1,72 @@
+<Window x:Class="MapEditor.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ic="clr-namespace:MapEditor"
+        Title="Settings" Width="760" SizeToContent="Height" ResizeMode="NoResize" WindowStartupLocation="CenterOwner"
+        FontFamily="Segoe UI" FontSize="13" Background="{DynamicResource WindowBrush}" Foreground="{DynamicResource TextBrush}" ShowInTaskbar="False">
+    <!-- Each kind of settings has its own window (the user's request 2026-11-04): SelectPage shows exactly one page.
+         Structure after the form layout (Theme.xaml, section FORM LAYOUT): rows = FormRow + FormLabelWide + field. -->
+    <DockPanel Margin="20,18,20,16">
+        <DockPanel DockPanel.Dock="Bottom" Margin="0,8,0,0">
+            <TextBlock x:Name="ErrorText" Foreground="{DynamicResource ErrorBrush}" TextWrapping="Wrap" VerticalAlignment="Center" Visibility="Collapsed"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button x:Name="CancelButton" Style="{StaticResource DialogButton}" Content="Cancel" IsCancel="True"/>
+                <Button x:Name="SaveButton" Style="{StaticResource DialogButton}" Content="Save" FontWeight="SemiBold" IsDefault="True" Click="Save_Click"/>
+                <!-- only on the page "About YAMEE": there is nothing to save there -->
+                <Button x:Name="OkButton" Style="{StaticResource DialogButton}" Content="OK" FontWeight="SemiBold" Visibility="Collapsed" Click="Ok_Click"/>
+            </StackPanel>
+        </DockPanel>
+
+        <Grid x:Name="Pages">
+            <!-- Paths -->
+            <ContentControl x:Name="PagePaths" Visibility="Collapsed">
+                <DockPanel>
+                    <StackPanel DockPanel.Dock="Top">
+                        <StackPanel Style="{StaticResource FormBlock}">
+                            <TextBlock Style="{StaticResource FormTitle}" Text="Project folder"/>
+                            <DockPanel>
+                                <Button DockPanel.Dock="Right" Style="{StaticResource FormButton}" Content="Browse …" Click="BrowseProject_Click"/>
+                                <TextBox x:Name="ProjectBox" Padding="6,3" TextWrapping="Wrap" VerticalContentAlignment="Center"/>
+                            </DockPanel>
+                            <TextBlock Style="{StaticResource FormHint}" Text="Your projects (subfolder Maps), their backups and the settings are saved here. Changing the folder moves nothing: existing projects stay where they are."/>
+                        </StackPanel>
+                        <StackPanel Style="{StaticResource FormBlock}">
+                            <TextBlock Style="{StaticResource FormTitle}" Text="Game folder"/>
+                            <DockPanel>
+                                <Button DockPanel.Dock="Right" Style="{StaticResource FormButton}" Content="Browse …" Click="BrowseGame_Click"/>
+                                <CheckBox x:Name="GameAutoCheck" DockPanel.Dock="Right" Style="{StaticResource FormCheck}" Margin="12,0,0,0" Content="automatic" Click="GameAuto_Click"/>
+                                <TextBox x:Name="GameBox" Padding="6,3" TextWrapping="Wrap" VerticalContentAlignment="Center"/>
+                            </DockPanel>
+                            <TextBlock Style="{StaticResource FormHint}" Text="Needed for the prefabs."/>
+                        </StackPanel>
+                    </StackPanel>
+                </DockPanel>
+            </ContentControl>
+
+            <!-- About YAMEE: read-only, only "OK" -->
+            <ContentControl x:Name="PageOther" Visibility="Collapsed">
+                <StackPanel>
+                    <StackPanel Style="{StaticResource FormBlock}">
+                        <TextBlock Style="{StaticResource FormTitle}" Text="About YAMEE"/>
+                        <!-- twice as large as in the ribbon (80 px there; the user's request 2026-11-05) -->
+                        <Image Source="Assets/yamee_logo.png" Height="160" HorizontalAlignment="Left" Margin="0,4,0,8"
+                               RenderOptions.BitmapScalingMode="HighQuality"/>
+                        <TextBlock x:Name="VersionText" Text=""/>
+                        <TextBlock Text="Author: Old Garyman 2026"/>
+                    </StackPanel>
+                    <StackPanel Style="{StaticResource FormBlock}">
+                        <TextBlock Style="{StaticResource FormTitle}" Text="License"/>
+                        <TextBlock TextWrapping="Wrap" Text="YAMEE is free software under the GNU General Public License v3.0 (GPL-3.0): you may use, share and change it under the terms of this license. There is no warranty."/>
+                        <TextBlock Margin="0,4,0,0"><Hyperlink NavigateUri="https://www.gnu.org/licenses/gpl-3.0.html" RequestNavigate="Link_Navigate">gnu.org/licenses/gpl-3.0</Hyperlink></TextBlock>
+                        <TextBlock Margin="0,2,0,0"><Hyperlink NavigateUri="https://github.com/OldGaryman/7Map" RequestNavigate="Link_Navigate">github.com/OldGaryman/7Map</Hyperlink></TextBlock>
+                    </StackPanel>
+                    <StackPanel Style="{StaticResource FormBlock}">
+                        <TextBlock Style="{StaticResource FormTitle}" Text="Icons"/>
+                        <TextBlock TextWrapping="Wrap" Text="The icons in YAMEE come from Bootstrap Icons (version 1.13.2), © The Bootstrap Authors, MIT License."/>
+                        <TextBlock Margin="0,4,0,0"><Hyperlink NavigateUri="https://icons.getbootstrap.com" RequestNavigate="Link_Navigate">icons.getbootstrap.com</Hyperlink></TextBlock>
+                    </StackPanel>
+                </StackPanel>
+            </ContentControl>
+        </Grid>
+    </DockPanel>
+</Window>
