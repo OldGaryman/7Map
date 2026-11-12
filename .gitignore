@@ -1,0 +1,17 @@
+# Weitergabe-Version (publish.bat erzeugt sie neu)
+publish/
+
+# Entwicklerwerkzeuge: Bau-Ordner
+tools/**/bin/
+tools/**/obj/
+
+# Visual Studio: persoenliche Fenster- und Sitzungsdaten
+.vs/
+*.user
+
+# Bau-Ordner des Editors (enthalten u. a. die Arbeitsprojekte unter bin\...\Maps - nie ins Git)
+app/**/bin/
+app/**/obj/
+
+# Nexus-Mods-Dateien (Beschreibungen, Banner) - nur lokal
+nexusmods/

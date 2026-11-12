@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <!-- Hellerer, frischer grüner Hintergrund mit radialem Helligkeitsverlauf -->
+    <radialGradient id="bgGradient" cx="50%" cy="45%" r="65%">
+      <stop offset="0%" stop-color="#4CAF50" />
+      <stop offset="60%" stop-color="#2E7D32" />
+      <stop offset="100%" stop-color="#1B5E20" />
+    </radialGradient>
+
+    <!-- Glowing Effect für Schrift und Sterne -->
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+
+    <!-- Verlauf für den Sternenschweif -->
+    <linearGradient id="trailGradient" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#fff9c4" stop-opacity="0.1" />
+      <stop offset="50%" stop-color="#ffe082" stop-opacity="0.7" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.9" />
+    </linearGradient>
+
+    <!-- Verlauf für den Stern & Text -->
+    <linearGradient id="starGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="100%" stop-color="#fff59d" />
+    </linearGradient>
+  </defs>
+
+  <!-- Abgerundetes Icon-Quadrat -->
+  <rect width="512" height="512" rx="100" fill="url(#bgGradient)" />
+
+  <!-- Dezente Hintergrund-Funkeln -->
+  <g fill="#ffffff" opacity="0.3">
+    <circle cx="60" cy="80" r="2" />
+    <circle cx="450" cy="430" r="1.5" />
+    <circle cx="70" cy="440" r="2.5" />
+    <circle cx="440" cy="60" r="2" />
+  </g>
+
+  <!-- Sternenschweif mit exakt drei Streifen -->
+  <g filter="url(#glow)">
+    <!-- Streifen 1 (Untere Bahn) -->
+    <path d="M 50,420 Q 190,450 350,270 T 475,135" fill="none" stroke="url(#trailGradient)" stroke-width="4" stroke-linecap="round" opacity="0.5" />
+    
+    <!-- Streifen 2 (Mittlere Bahn - etwas kräftiger) -->
+    <path d="M 35,395 Q 175,425 335,245 T 460,110" fill="none" stroke="url(#trailGradient)" stroke-width="7" stroke-linecap="round" opacity="0.8" />
+    
+    <!-- Streifen 3 (Obere Bahn) -->
+    <path d="M 20,370 Q 160,400 320,220 T 445,85" fill="none" stroke="url(#trailGradient)" stroke-width="3" stroke-linecap="round" opacity="0.4" />
+
+    <!-- Hauptstern an der Spitze des Schweifs -->
+    <path d="M 465,110 Q 465,90 485,90 Q 465,90 465,70 Q 465,90 445,90 Q 465,90 465,110" fill="url(#starGradient)" />
+    
+    <!-- Kleiner Begleitstern -->
+    <path d="M 390,165 Q 390,153 402,153 Q 390,153 390,141 Q 390,153 378,153 Q 390,153 390,165" fill="url(#starGradient)" />
+  </g>
+
+  <!-- Großes Y im Vordergrund -->
+  <g filter="url(#glow)">
+    <text x="256" y="380" font-family="&#39;Montserrat&#39;, &#39;Arial Black&#39;, sans-serif" font-weight="900" font-size="340" fill="url(#starGradient)" text-anchor="middle" transform="rotate(-5, 256, 380)">
+      Y
+    </text>
+  </g>
+</svg>
