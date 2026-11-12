@@ -1,0 +1,6 @@
+# Dateien genau so speichern, wie sie sind (keine Zeilenende-Umwandlung,
+# die Spieldateien brauchen CRLF und BOM)
+* -text
+*.raw binary
+*.png binary
+*.ttw binary

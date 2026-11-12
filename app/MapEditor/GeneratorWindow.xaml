@@ -1,0 +1,154 @@
+<Window x:Class="MapEditor.GeneratorWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ic="clr-namespace:MapEditor"
+        Title="Generate world" Width="980" SizeToContent="Height" ResizeMode="NoResize" WindowStartupLocation="CenterOwner"
+        FontFamily="Segoe UI" FontSize="13" Background="{DynamicResource WindowBrush}" Foreground="{DynamicResource TextBrush}" ShowInTaskbar="False">
+    <!-- Terrain generator (the user's request 2026-11-06): new world without cities, roads and buildings, little water.
+         Form layout from Theme.xaml (FormRow + FormLabelWide + field). On the right the preview (coarse grid, same landscape). -->
+    <DockPanel Margin="20,18,20,16">
+        <DockPanel DockPanel.Dock="Bottom" Margin="0,12,0,0">
+            <TextBlock x:Name="ErrorText" Foreground="{DynamicResource ErrorBrush}" TextWrapping="Wrap" VerticalAlignment="Center" MaxWidth="560"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Style="{StaticResource DialogButton}" Content="Cancel" IsCancel="True"/>
+                <Button x:Name="CreateButton" Style="{StaticResource DialogButton}" FontWeight="SemiBold" IsDefault="True" Click="Create_Click">
+                    <StackPanel Orientation="Horizontal"><TextBlock Style="{StaticResource IconText}" Text="{x:Static ic:Icons.Magic}"/><TextBlock Text="Create world" Margin="6,0,0,0"/></StackPanel>
+                </Button>
+            </StackPanel>
+        </DockPanel>
+
+        <!-- Preview -->
+        <StackPanel DockPanel.Dock="Right" Width="420" Margin="24,0,0,0">
+            <DockPanel Style="{StaticResource FormRow}">
+                <TextBlock Style="{StaticResource FormTitle}" Margin="0" Text="Preview"/>
+                <RadioButton x:Name="ShowHeights" Style="{StaticResource FormRadio}" DockPanel.Dock="Right" Margin="0" Content="Heights" GroupName="PreviewMode" Click="PreviewMode_Click"/>
+                <RadioButton x:Name="ShowBiomes" Style="{StaticResource FormRadio}" DockPanel.Dock="Right" Content="Biomes" GroupName="PreviewMode" IsChecked="True" Click="PreviewMode_Click"/>
+            </DockPanel>
+            <Border BorderBrush="{DynamicResource SoftLineBrush}" BorderThickness="1" Width="420" Height="420" Background="{DynamicResource FieldBrush}">
+                <Grid>
+                    <Image x:Name="PreviewImage" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality"/>
+                    <Border x:Name="PreviewBusy" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="6" Padding="6,2" CornerRadius="4" Background="{DynamicResource CardBrush}"><TextBlock Text="Computing …" FontSize="12" Foreground="{DynamicResource SubtleTextBrush}"/></Border>
+                </Grid>
+            </Border>
+            <TextBlock x:Name="PreviewInfo" Style="{StaticResource FormNote}"/>
+            <TextBlock Style="{StaticResource FormHint}" Text="North is at the top. The preview is coarse; the world gets the same landscape with fine detail."/>
+        </StackPanel>
+
+        <StackPanel>
+            <TextBlock Style="{StaticResource FormTitle}" Text="World"/>
+            <Border Style="{StaticResource FormBox}" Margin="0">
+                <StackPanel>
+                    <DockPanel Style="{StaticResource FormRowFill}">
+                        <TextBlock Style="{StaticResource FormLabelWide}" Text="Name"/>
+                        <TextBox x:Name="NameBox" Height="{StaticResource FormControlHeight}" VerticalContentAlignment="Center" Padding="3,0" TextChanged="Name_Changed"/>
+                    </DockPanel>
+                    <DockPanel Style="{StaticResource FormRow}">
+                        <TextBlock Style="{StaticResource FormLabelWide}" Text="Size"/>
+                        <ComboBox x:Name="SizeBox" Style="{StaticResource FormCombo}" SelectionChanged="Selection_Changed">
+                            <ComboBoxItem Content="2 km" Tag="2048"/>
+                            <ComboBoxItem Content="4 km" Tag="4096"/>
+                            <ComboBoxItem Content="6 km" Tag="6144"/>
+                            <ComboBoxItem Content="8 km" Tag="8192"/>
+                            <ComboBoxItem Content="10 km" Tag="10240"/>
+                        </ComboBox>
+                    </DockPanel>
+                    <DockPanel Style="{StaticResource FormRow}">
+                        <TextBlock Style="{StaticResource FormLabelWide}" Text="Seed"/>
+                        <TextBox x:Name="SeedBox" Width="150" Height="{StaticResource FormControlHeight}" VerticalContentAlignment="Center" Padding="3,0" DockPanel.Dock="Left" TextChanged="Text_Changed"/>
+                        <Button Style="{StaticResource FormButton}" Click="RandomSeed_Click" ToolTip="New random seed – same seed = same world">
+                            <StackPanel Orientation="Horizontal"><TextBlock Style="{StaticResource IconText}" Text="{x:Static ic:Icons.Dice5}"/><TextBlock Text="Random" Margin="6,0,0,0"/></StackPanel>
+                        </Button>
+                    </DockPanel>
+                </StackPanel>
+            </Border>
+
+            <TextBlock Style="{StaticResource FormTitle}" Margin="0,16,0,6" Text="Biomes (share in %)"/>
+            <Border Style="{StaticResource FormBox}" Margin="0">
+                <StackPanel>
+                    <DockPanel Style="{StaticResource FormRow}">
+                        <TextBlock Style="{StaticResource FormLabelWide}" Text="Pine forest"/>
+                        <TextBox x:Name="Share0" Style="{StaticResource FormField}" TextChanged="Text_Changed"/>
+                        <TextBlock Style="{StaticResource FormUnit}" Text="%"/>
+                    </DockPanel>
+                    <DockPanel Style="{StaticResource FormRow}">
+                        <TextBlock Style="{StaticResource FormLabelWide}" Text="Burnt forest"/>
+                        <TextBox x:Name="Share1" Style="{StaticResource FormField}" TextChanged="Text_Changed"/>
+                        <TextBlock Style="{StaticResource FormUnit}" Text="%"/>
+                    </DockPanel>
+                    <DockPanel Style="{StaticResource FormRow}">
+                        <TextBlock Style="{StaticResource FormLabelWide}" Text="Desert"/>
+                        <TextBox x:Name="Share2" Style="{StaticResource FormField}" TextChanged="Text_Changed"/>
+                        <TextBlock Style="{StaticResource FormUnit}" Text="%"/>
+                    </DockPanel>
+                    <DockPanel Style="{StaticResource FormRow}">
+                        <TextBlock Style="{StaticResource FormLabelWide}" Text="Snow"/>
+                        <TextBox x:Name="Share3" Style="{StaticResource FormField}" TextChanged="Text_Changed"/>
+                        <TextBlock Style="{StaticResource FormUnit}" Text="%"/>
+                    </DockPanel>
+                    <DockPanel Style="{StaticResource FormRow}">
+                        <TextBlock Style="{StaticResource FormLabelWide}" Text="Wasteland"/>
+                        <TextBox x:Name="Share4" Style="{StaticResource FormField}" TextChanged="Text_Changed"/>
+                        <TextBlock Style="{StaticResource FormUnit}" Text="%"/>
+                        <TextBlock x:Name="ShareSum" Style="{StaticResource FormInfo}"/>
+                    </DockPanel>
+                </StackPanel>
+            </Border>
+
+            <TextBlock Style="{StaticResource FormTitle}" Margin="0,16,0,6" Text="Landscape"/>
+            <Border Style="{StaticResource FormBox}" Margin="0">
+                <StackPanel>
+                    <DockPanel Style="{StaticResource FormRowFill}">
+                        <TextBlock Style="{StaticResource FormLabelWide}" Text="Mountains"/>
+                        <TextBlock x:Name="MountainsText" Style="{StaticResource FormUnit}" DockPanel.Dock="Right" Width="44" TextAlignment="Right"/>
+                        <Slider x:Name="MountainsSlider" Style="{StaticResource FormSlider}" Margin="0" Minimum="0" Maximum="300" TickFrequency="10" IsSnapToTickEnabled="True" ValueChanged="Slider_Changed"
+                                ToolTip="Height and number of mountains (snow, burnt forest, pine forest) and of the plateaus in the desert. 100 % = like the game"/>
+                    </DockPanel>
+                    <DockPanel Style="{StaticResource FormRowFill}">
+                        <TextBlock Style="{StaticResource FormLabelWide}" Text="Hills"/>
+                        <TextBlock x:Name="HillsText" Style="{StaticResource FormUnit}" DockPanel.Dock="Right" Width="44" TextAlignment="Right"/>
+                        <Slider x:Name="HillsSlider" Style="{StaticResource FormSlider}" Margin="0" Minimum="0" Maximum="300" TickFrequency="10" IsSnapToTickEnabled="True" ValueChanged="Slider_Changed"
+                                ToolTip="Gentle up and down between the mountains. 0 % = almost flat"/>
+                    </DockPanel>
+                    <DockPanel Style="{StaticResource FormRowFill}">
+                        <TextBlock Style="{StaticResource FormLabelWide}" Text="Valleys"/>
+                        <TextBlock x:Name="ValleysText" Style="{StaticResource FormUnit}" DockPanel.Dock="Right" Width="44" TextAlignment="Right"/>
+                        <Slider x:Name="ValleysSlider" Style="{StaticResource FormSlider}" Margin="0" Minimum="0" Maximum="300" TickFrequency="10" IsSnapToTickEnabled="True" ValueChanged="Slider_Changed"
+                                ToolTip="Winding valleys cut into the land, deeper in the mountains. 0 % = no valleys"/>
+                    </DockPanel>
+                    <DockPanel Style="{StaticResource FormRowFill}">
+                        <TextBlock Style="{StaticResource FormLabelWide}" Text="Erosion"/>
+                        <TextBlock x:Name="ErosionText" Style="{StaticResource FormUnit}" DockPanel.Dock="Right" Width="44" TextAlignment="Right"/>
+                        <Slider x:Name="ErosionSlider" Style="{StaticResource FormSlider}" Margin="0" Minimum="0" Maximum="300" TickFrequency="10" IsSnapToTickEnabled="True" ValueChanged="Slider_Changed"
+                                ToolTip="Rain digs branching gullies into all slopes and leaves fans of debris below. Only visible in the world, not in the preview"/>
+                    </DockPanel>
+                    <DockPanel Style="{StaticResource FormRowFill}">
+                        <TextBlock Style="{StaticResource FormLabelWide}" Text="Roughness"/>
+                        <TextBlock x:Name="RoughText" Style="{StaticResource FormUnit}" DockPanel.Dock="Right" Width="44" TextAlignment="Right"/>
+                        <Slider x:Name="RoughSlider" Style="{StaticResource FormSlider}" Margin="0" Minimum="0" Maximum="300" TickFrequency="10" IsSnapToTickEnabled="True" ValueChanged="Slider_Changed"
+                                ToolTip="Crags, ridges and rock steps on mountains and small bumps everywhere (stronger on slopes). Fine detail is only visible in the world, not in the preview"/>
+                    </DockPanel>
+                    <DockPanel Style="{StaticResource FormRow}">
+                        <TextBlock Style="{StaticResource FormLabelWide}" Text="Lakes"/>
+                        <ComboBox x:Name="LakesBox" Style="{StaticResource FormCombo}" SelectionChanged="Selection_Changed">
+                            <ComboBoxItem Content="None"/>
+                            <ComboBoxItem Content="Few"/>
+                            <ComboBoxItem Content="Some"/>
+                            <ComboBoxItem Content="Many"/>
+                        </ComboBox>
+                    </DockPanel>
+                    <DockPanel Style="{StaticResource FormRow}">
+                        <TextBlock Style="{StaticResource FormLabelWide}" Text="Unique formations"/>
+                        <ComboBox x:Name="AnomaliesBox" Style="{StaticResource FormCombo}" SelectionChanged="Selection_Changed"
+                                  ToolTip="Rare special landforms: meteor crater, rock needles, sinkhole, canyon, terraced hill, escarpment, basalt columns. Their positions are listed after creating the world">
+                            <ComboBoxItem Content="None"/>
+                            <ComboBoxItem Content="Few"/>
+                            <ComboBoxItem Content="Some"/>
+                            <ComboBoxItem Content="Many"/>
+                        </ComboBox>
+                    </DockPanel>
+                </StackPanel>
+            </Border>
+            <TextBlock Style="{StaticResource FormNote}" Text="Without towns, roads and buildings. Lakes lie in hollows, also between mountains; the shore is at least 1 m above the water."/>
+        </StackPanel>
+    </DockPanel>
+</Window>
