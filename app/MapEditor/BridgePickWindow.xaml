@@ -1,0 +1,20 @@
+<Window x:Class="MapEditor.BridgePickWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Bridges" Width="520" Height="620" MinWidth="380" MinHeight="320" ResizeMode="CanResizeWithGrip"
+        WindowStartupLocation="Manual" ShowInTaskbar="False" ShowActivated="False"
+        FontFamily="Segoe UI" FontSize="13" Background="{DynamicResource WindowBrush}" Foreground="{DynamicResource TextBrush}">
+    <!-- the active bridge kits while the bridge tool is on: choose one by hand or "randomly" (the user's request 2026-11-24);
+         swap mode: the kits for one bridge (planned or built) to swap it (the user's request 2026-11-25); the list scrolls to the
+         chosen/current bridge (2026-11-26) -->
+    <DockPanel Margin="{StaticResource WindowPadding}">
+        <TextBlock x:Name="HeaderText" DockPanel.Dock="Top" Style="{StaticResource FormTitle}" TextWrapping="Wrap" Text=""/>
+        <TextBlock x:Name="IntroText" DockPanel.Dock="Top" Style="{StaticResource FormIntro}"
+                   Text="Choose a bridge, then click onto a straight piece of a river. Randomly = per place one of the kits that fits the river."/>
+        <DockPanel DockPanel.Dock="Bottom" Margin="{StaticResource DialogFooterMargin}" LastChildFill="False">
+            <Button x:Name="ModsButton" DockPanel.Dock="Left" Style="{StaticResource DialogButton}" Margin="0" Content="Bridge mods …"/>
+            <Button x:Name="DoneButton" DockPanel.Dock="Right" Style="{StaticResource DialogButton}" FontWeight="SemiBold" Content="Done" Visibility="Collapsed"/>
+        </DockPanel>
+        <ListBox x:Name="KitList" Style="{StaticResource ListBorder}" ScrollViewer.CanContentScroll="False"/>
+    </DockPanel>
+</Window>

@@ -1,0 +1,31 @@
+<Window x:Class="MapEditor.BridgeModsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Bridge mods" Width="960" Height="680" MinWidth="720" MinHeight="460"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False"
+        FontFamily="Segoe UI" FontSize="13" Background="{DynamicResource WindowBrush}" Foreground="{DynamicResource TextBrush}">
+    <!-- which bridge kits YAMEE builds (the user's request 2026-11-24): check boxes per kit, values of the chosen kit on the right -->
+    <DockPanel Margin="{StaticResource WindowPadding}">
+        <TextBlock DockPanel.Dock="Top" Style="{StaticResource FormTitle}" Text="Bridge mods"/>
+        <TextBlock DockPanel.Dock="Top" Style="{StaticResource FormIntro}"
+                   Text="Tick the bridges YAMEE may build and whether for asphalt and/or gravel roads."/>
+        <DockPanel DockPanel.Dock="Bottom" Margin="{StaticResource DialogFooterMargin}" LastChildFill="False">
+            <Button x:Name="AddButton" Style="{StaticResource DialogButton}" Content="Add kit …" Margin="0"/>
+            <Button x:Name="RemoveButton" Style="{StaticResource DialogButton}" Content="Remove" IsEnabled="False"/>
+            <Button x:Name="CloseButton" DockPanel.Dock="Right" Style="{StaticResource DialogButton}" Content="Close" IsCancel="True" IsDefault="True"/>
+        </DockPanel>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="400"/>
+            </Grid.ColumnDefinitions>
+            <ListBox x:Name="KitList" Style="{StaticResource ListBorder}"/>
+            <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto" Margin="14,0,0,0">
+                <StackPanel x:Name="Details" IsEnabled="False">
+                    <TextBlock x:Name="DetailTitle" Style="{StaticResource FormSection}" Margin="0,0,0,4" Text="No kit chosen"/>
+                    <TextBlock x:Name="DetailPieces" Style="{StaticResource FormNote}" Text=""/>
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+    </DockPanel>
+</Window>

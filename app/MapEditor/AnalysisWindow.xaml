@@ -1,0 +1,34 @@
+<Window x:Class="MapEditor.AnalysisWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ic="clr-namespace:MapEditor"
+        Title="Convert project" Width="760" Height="640" MinHeight="360" MinWidth="560" ResizeMode="CanResizeWithGrip" WindowStartupLocation="CenterOwner"
+        FontFamily="Segoe UI" FontSize="13" Background="{DynamicResource WindowBrush}" Foreground="{DynamicResource TextBrush}" ShowInTaskbar="False">
+    <!-- Project check (the user's request 2026-11-13): what of the project does not exist in the installed game; replacements are
+         offered but never forced ("keep" is the default). Not modal: a click on a row shows the place on the map. -->
+    <DockPanel Margin="{StaticResource WindowPadding}">
+        <DockPanel DockPanel.Dock="Bottom" Margin="{StaticResource DialogFooterMargin}">
+            <TextBlock x:Name="ResultText" TextWrapping="Wrap" VerticalAlignment="Center" MaxWidth="380"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Style="{StaticResource DialogButton}" Content="Close" IsCancel="True" Click="Close_Click"/>
+                <Button x:Name="AutoButton" Style="{StaticResource DialogButton}" IsEnabled="False" Click="Auto_Click"
+                        ToolTip="Replace everything that is missing or does not fit: city tiles with tiles of the same district and shape (lots built up again), buildings with fitting ones, missing parts are removed (one editing step, undo with Ctrl+Z)">
+                    <StackPanel Orientation="Horizontal"><TextBlock Style="{StaticResource IconText}" Text="{x:Static ic:Icons.Magic}"/><TextBlock Text="Replace everything automatically" Margin="6,0,0,0"/></StackPanel>
+                </Button>
+                <Button x:Name="ReplaceButton" Style="{StaticResource DialogButton}" FontWeight="SemiBold" IsEnabled="False" Click="Replace_Click"
+                        ToolTip="Replace the buildings for which a replacement is chosen (one editing step, undo with Ctrl+Z)">
+                    <StackPanel Orientation="Horizontal"><TextBlock Style="{StaticResource IconText}" Text="{x:Static ic:Icons.ArrowLeftRight}"/><TextBlock Text="Replace chosen" Margin="6,0,0,0"/></StackPanel>
+                </Button>
+            </StackPanel>
+        </DockPanel>
+
+        <StackPanel DockPanel.Dock="Top">
+            <TextBlock Style="{StaticResource FormTitle}" Text="Project and installed game"/>
+            <TextBlock x:Name="VersionsText" TextWrapping="Wrap"/>
+            <TextBlock x:Name="SummaryText" TextWrapping="Wrap" FontWeight="SemiBold" Margin="0,8,0,0"/>
+            <TextBlock Style="{StaticResource FormHint}" Text="Click a line: the map shows the next copy. Missing buildings can stay – the game then leaves their place empty. A replacement on a lot of a city tile fits it exactly; in the wilderness it takes the same place and the ground is leveled like when placing."/>
+        </StackPanel>
+
+        <ListBox x:Name="IssueList" Style="{StaticResource ListBorder}" Margin="0,10,0,0" SelectionChanged="Issue_SelectionChanged" PreviewMouseLeftButtonUp="Issue_Click"/>
+    </DockPanel>
+</Window>

@@ -1,0 +1,35 @@
+<Window x:Class="MapEditor.NewProjectWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ic="clr-namespace:MapEditor"
+        Title="New project" Width="500" SizeToContent="Height" ResizeMode="NoResize" WindowStartupLocation="CenterOwner"
+        FontFamily="Segoe UI" FontSize="13" Background="{DynamicResource WindowBrush}" Foreground="{DynamicResource TextBrush}" ShowInTaskbar="False">
+    <!-- Menu rebuild 2026-11-20 (the user's request): "New map" = enter a name, go to the map generator right away or later;
+         "Open map" = take a world from the game (the former "New project"). -->
+    <StackPanel Margin="{StaticResource WindowPadding}">
+        <RadioButton x:Name="NewMapRadio" Style="{StaticResource FormRadio}" GroupName="Kind" IsChecked="True" Margin="0,0,0,6" Click="Kind_Click" Content="New map"/>
+        <Border x:Name="NewMapBox" Style="{StaticResource FormBox}" Margin="0">
+            <StackPanel>
+                <DockPanel Style="{StaticResource FormRowFill}">
+                    <TextBlock Style="{StaticResource FormLabelWide}" Text="Map name"/>
+                    <Button Style="{StaticResource FormButton}" DockPanel.Dock="Right" Margin="8,0,0,0" Click="RandomName_Click" ToolTip="Suggest a random name. The name is also the seed of the map: same name = same map">
+                        <StackPanel Orientation="Horizontal"><TextBlock Style="{StaticResource IconText}" Text="{x:Static ic:Icons.Dice5}"/><TextBlock Text="Random" Margin="6,0,0,0"/></StackPanel>
+                    </Button>
+                    <TextBox x:Name="NameBox" Height="{StaticResource FormControlHeight}" VerticalContentAlignment="Center" Padding="3,0" TextChanged="Name_Changed"/>
+                </DockPanel>
+                <DockPanel Style="{StaticResource FormRow}">
+                    <CheckBox x:Name="GeneratorCheck" Style="{StaticResource FormCheck}" IsChecked="True" Content="Go to the map generator right away"/>
+                </DockPanel>
+            </StackPanel>
+        </Border>
+        <RadioButton x:Name="OpenMapRadio" Style="{StaticResource FormRadio}" GroupName="Kind" Margin="0,14,0,0" Click="Kind_Click" Content="Open map"/>
+        <TextBlock Style="{StaticResource FormHint}" Text="Take a world from the game (folder GeneratedWorlds) and create a project from it."/>
+        <DockPanel Margin="{StaticResource DialogFooterMargin}">
+            <TextBlock x:Name="ErrorText" Foreground="{DynamicResource ErrorBrush}" TextWrapping="Wrap" VerticalAlignment="Center" MaxWidth="290"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Style="{StaticResource DialogButton}" Content="Cancel" IsCancel="True"/>
+                <Button x:Name="OkButton" Style="{StaticResource DialogButton}" FontWeight="SemiBold" IsDefault="True" Content="OK" Click="Ok_Click"/>
+            </StackPanel>
+        </DockPanel>
+    </StackPanel>
+</Window>

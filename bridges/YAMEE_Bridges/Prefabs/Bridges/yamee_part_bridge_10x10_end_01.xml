@@ -1,0 +1,50 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<prefab>
+  <property name="CopyAirBlocks" value="False" />
+  <property name="ExcludeDistantPOIMesh" value="False" />
+  <property name="DistantPOIYOffset" value="0" />
+  <property name="TraderArea" value="False" />
+  <property name="YOffset" value="0" />
+  <property name="EditorGroups" value="parts" />
+  <property name="DifficultyTier" value="0" />
+  <property name="ExcludePOICulling" value="False" />
+  <property name="RotationToFaceNorth" value="0" />
+  <property name="ShowQuestClearCount" value="1" />
+  <property name="PrefabSize" value="14, 18, 10" />
+  <property name="Tags" value="part, hideui" />
+  <property name="Zoning" value="none" />
+  <property name="AllowDecorations" value="True" />
+  <property class="Stats">
+    <property name="LightsVolume" value="0" />
+    <property name="TotalVertices" value="12234" />
+    <property name="TotalTriangles" value="7346" />
+    <property class="BlockEntities">
+      <property name="Vertices" value="0" />
+      <property name="Triangles" value="0" />
+    </property>
+    <property class="ChunkMeshes0">
+      <property name="Vertices" value="11926" />
+      <property name="Triangles" value="6838" />
+    </property>
+    <property class="ChunkMeshes1">
+      <property name="Vertices" value="0" />
+      <property name="Triangles" value="0" />
+    </property>
+    <property class="ChunkMeshes2">
+      <property name="Vertices" value="0" />
+      <property name="Triangles" value="0" />
+    </property>
+    <property class="ChunkMeshes3">
+      <property name="Vertices" value="0" />
+      <property name="Triangles" value="0" />
+    </property>
+    <property class="ChunkMeshes4">
+      <property name="Vertices" value="0" />
+      <property name="Triangles" value="0" />
+    </property>
+    <property class="ChunkMeshes5">
+      <property name="Vertices" value="308" />
+      <property name="Triangles" value="508" />
+    </property>
+  </property>
+</prefab>

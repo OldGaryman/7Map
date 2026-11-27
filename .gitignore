@@ -1,0 +1,10 @@
+# Distribution builds (publish.bat creates them)
+publish/
+
+# Visual Studio user settings
+.vs/
+*.user
+
+# Editor build folders
+app/**/bin/
+app/**/obj/

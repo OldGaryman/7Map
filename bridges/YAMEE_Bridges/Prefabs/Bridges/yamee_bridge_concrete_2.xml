@@ -1,0 +1,61 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<prefab>
+  <property name="CopyAirBlocks" value="False" />
+  <property name="ExcludeDistantPOIMesh" value="False" />
+  <property name="ExcludePOICulling" value="False" />
+  <property name="DistantPOIYOffset" value="0" />
+  <property name="DifficultyTier" value="0" />
+  <property name="ShowQuestClearCount" value="1" />
+  <property name="TraderArea" value="False" />
+  <property name="PrefabSize" value="45, 15, 13" />
+  <property name="RotationToFaceNorth" value="2" />
+  <property name="Zoning" value="none" />
+  <property name="YOffset" value="0" />
+  <property name="EditorGroups" value="navezgane only" />
+  <property name="Tags" value="navonly" />
+  <property name="AllowDecorations" value="True" />
+  <property class="Stats">
+    <property name="LightsVolume" value="268082.6" />
+    <property name="TotalVertices" value="37436" />
+    <property name="TotalTriangles" value="19834" />
+    <property class="BlockEntities">
+      <property name="Vertices" value="18267" />
+      <property name="Triangles" value="6464" />
+    </property>
+    <property class="ChunkMeshes0">
+      <property name="Vertices" value="18271" />
+      <property name="Triangles" value="11994" />
+    </property>
+    <property class="ChunkMeshes1">
+      <property name="Vertices" value="0" />
+      <property name="Triangles" value="0" />
+    </property>
+    <property class="ChunkMeshes2">
+      <property name="Vertices" value="0" />
+      <property name="Triangles" value="0" />
+    </property>
+    <property class="ChunkMeshes3">
+      <property name="Vertices" value="0" />
+      <property name="Triangles" value="0" />
+    </property>
+    <property class="ChunkMeshes4">
+      <property name="Vertices" value="0" />
+      <property name="Triangles" value="0" />
+    </property>
+    <property class="ChunkMeshes5">
+      <property name="Vertices" value="898" />
+      <property name="Triangles" value="1376" />
+    </property>
+  </property>
+  <property class="IndexedBlockOffsets">
+    <property class="POILight">
+      <property name="0" value="41, 14, 1" />
+    </property>
+    <property class="challenge_polymers">
+      <property name="0" value="22, 5, 8" />
+    </property>
+    <property class="challenge_gore">
+      <property name="0" value="23, 5, 3" />
+    </property>
+  </property>
+</prefab>

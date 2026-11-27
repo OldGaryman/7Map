@@ -1,0 +1,20 @@
+<Window x:Class="MapEditor.StepsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ic="clr-namespace:MapEditor"
+        Title="Edit history" Width="340" Height="420" MinWidth="260" MinHeight="220"
+        ShowInTaskbar="False" ShowActivated="False"
+        FontFamily="Segoe UI" FontSize="13" Background="{DynamicResource WindowBrush}" Foreground="{DynamicResource TextBrush}">
+    <DockPanel Margin="{StaticResource WindowPadding}">
+        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,10">
+            <TextBlock x:Name="StepCountText" DockPanel.Dock="Right" Style="{StaticResource FormNote}" Margin="0" Text=""/>
+            <TextBlock Style="{StaticResource FormSection}" Margin="0" Text="UNSAVED STEPS"/>
+        </DockPanel>
+        <UniformGrid DockPanel.Dock="Bottom" Columns="2" Margin="{StaticResource DialogFooterMargin}">
+            <Button x:Name="UndoButton" Style="{StaticResource DialogButton}" Margin="0,0,4,0"><StackPanel Orientation="Horizontal"><TextBlock Style="{StaticResource IconText}" Text="{x:Static ic:Icons.ArrowCounterclockwise}"/><TextBlock Text="Undo" Margin="6,0,0,0"/></StackPanel></Button>
+            <Button x:Name="RedoButton" Style="{StaticResource DialogButton}" Margin="4,0,0,0"><StackPanel Orientation="Horizontal"><TextBlock Style="{StaticResource IconText}" Text="{x:Static ic:Icons.ArrowClockwise}"/><TextBlock Text="Redo" Margin="6,0,0,0"/></StackPanel></Button>
+        </UniformGrid>
+        <TextBlock x:Name="UndoText" DockPanel.Dock="Bottom" Style="{StaticResource FormNote}" Text=""/>
+        <ListBox x:Name="StepList" Style="{StaticResource ListBorder}"/>
+    </DockPanel>
+</Window>
